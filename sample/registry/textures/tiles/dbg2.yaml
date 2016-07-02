@@ -1,0 +1,5 @@
+_dummy: dummy
+
+layers: 
+    - image: dirt
+      rotate: 90.0

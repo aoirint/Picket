@@ -1,0 +1,41 @@
+# eclipse
+bin/
+*.launch
+.settings/
+*.metadata
+*.classpath
+*.project
+*.class
+
+# idea
+out/
+*.ipr
+*.iws
+*.iml
+*.idea
+
+# gradle
+build/
+*.gradle
+gradle/
+
+# other
+eclipse/
+run/
+libs/
+
+# gradlew
+gradlew/
+
+*.bat
+
+# maven
+target/
+
+
+/saves/
+/temp/
+/screenshots/
+
+desktop.ini
+
