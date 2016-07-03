@@ -53,6 +53,8 @@ public class GameBuilder
 
         World world = buildWorld(info, registry);
 
+        App.logger.info("Loaded " + world.maps().size() + " maps");
+
         return new Game(info, world, registry);
 
     }
@@ -116,9 +118,11 @@ public class GameBuilder
 
                     if (imgDir.exists())
                     {
-                        walk(path(imgDir)).filter(imgPredicate).forEach((path) ->
+                        Path imgDirPath = path(imgDir);
+
+                        walk(imgDirPath).filter(imgPredicate).forEach((path) ->
                         {
-                            String id = splitExtension(name(path));
+                            String id = splitExtension(str(imgDirPath.relativize(path)));
                             File file = file(path);
 
                             try
@@ -135,9 +139,11 @@ public class GameBuilder
 
                     if (textureDir.exists())
                     {
-                        walk(path(textureDir)).filter(yamlPredicate).forEach((path) ->
+                        Path textureDirPath = path(textureDir);
+
+                        walk(textureDirPath).filter(yamlPredicate).forEach((path) ->
                         {
-                            String id = splitExtension(name(path));
+                            String id = splitExtension(str(textureDirPath.relativize(path)));
                             File file = file(path);
 
                             try
@@ -182,6 +188,13 @@ public class GameBuilder
                                 Map<String, Object> tileData = yaml.loadAs(reader(file), Map.class);
 
                                 String texture = (String) tileData.getOrDefault("texture", "tiles/" + id);
+
+
+                                if (! textureRegistry.containsKey(texture) && imageRegistry.containsKey(texture))
+                                {
+                                    textureRegistry.put(texture, new Texture(texture, new TextureLayer(texture, 0d)));
+                                }
+
 
                                 tileRegistry.put(id, new Tile(id, texture));
 
@@ -236,6 +249,7 @@ public class GameBuilder
                             String id = splitExtension(name(path));
                             File file = file(path);
 
+
                             try
                             {
                                 @SuppressWarnings("unchecked")
@@ -257,28 +271,28 @@ public class GameBuilder
 
                                 Tile nullTile = registry.tileRegistry.get("null");
 
-                                for (int x=0, realW=tileData.size(); x<width; x++)
+                                for (int y=0, realH=tileData.size(); y<height; y++)
                                 {
-                                    List<String> line = (x < realW) ? tileData.get(x) : null;
-                                    int realH = line != null ? line.size() : 0;
+                                    List<String> line = (y < realH) ? tileData.get(y) : null;
+                                    int realW = line != null ? line.size() : 0;
 
-                                    for (int y=0; y<height; y++)
+                                    for (int x=0; x<width; x++)
                                     {
-                                        String tileId = y < realH && line != null ? line.get(x) : null;
+                                        String tileId = x < realW && line != null ? line.get(x) : null;
                                         Tile tile = tileId != null ? registry.tileRegistry.getOrDefault(tileId, nullTile) : nullTile;
 
                                         tiles[x][y] = tile;
                                     }
                                 }
 
-                                for (int x=0, realW=fieldTypeData.size(); x<width; x++)
+                                for (int y=0, realH=fieldTypeData.size(); y<height; y++)
                                 {
-                                    List<String> line = (x < realW) ? fieldTypeData.get(x) : null;
-                                    int realH = line != null ? line.size() : 0;
+                                    List<String> line = (y < realH) ? fieldTypeData.get(y) : null;
+                                    int realW = line != null ? line.size() : 0;
 
-                                    for (int y=0; y<height; y++)
+                                    for (int x=0; x<width; x++)
                                     {
-                                        String fieldTypeId = y < realH && line != null ? line.get(x) : null;
+                                        String fieldTypeId = x < realW && line != null ? line.get(x) : null;
                                         FieldType fieldType = FieldType.NORMAL;
 
                                         if (fieldTypeId != null)
@@ -307,7 +321,6 @@ public class GameBuilder
                                         fieldTypes[x][y] = fieldType;
                                     }
                                 }
-
 
 
                                 mapRegistry.put(id, new FieldMap(id, width, height, tiles, fieldTypes));

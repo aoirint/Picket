@@ -8,7 +8,15 @@ public abstract class World
 {
     protected Map<String, FieldMap> mapRegistry;
 
+    public FieldMap getMap(String id)
+    {
+        return mapRegistry.get(id);
+    }
 
+    public Map<String, FieldMap> maps()
+    {
+        return mapRegistry;
+    }
 
 
     @Override

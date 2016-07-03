@@ -20,6 +20,32 @@ public class FieldMap
         this.fieldTypes = fieldTypes;
     }
 
+    public String id()
+    {
+        return id;
+    }
+
+    public int width()
+    {
+        return width;
+    }
+
+    public int height()
+    {
+        return height;
+    }
+
+    public Tile tileAt(int x, int y)
+    {
+        return tiles[x][y];
+    }
+
+    public FieldType fieldTypeAt(int x, int y)
+    {
+        return fieldTypes[x][y];
+    }
+
+
     @Override
     public String toString()
     {

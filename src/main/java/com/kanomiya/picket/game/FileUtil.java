@@ -24,6 +24,11 @@ public class FileUtil
         return path.getFileName().toString();
     }
 
+    public static String str(Path path)
+    {
+        return path.toString().replace('\\', '/');
+    }
+
     public static String splitExtension(String fileName)
     {
         return fileName.substring(0, fileName.lastIndexOf('.'));
