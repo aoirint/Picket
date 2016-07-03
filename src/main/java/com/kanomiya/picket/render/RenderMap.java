@@ -4,8 +4,8 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 
 import com.kanomiya.picket.game.Game;
-import com.kanomiya.picket.tile.Tile;
 import com.kanomiya.picket.world.FieldMap;
+import com.kanomiya.picket.world.tile.Tile;
 
 public class RenderMap extends RenderBase<FieldMap>
 {
@@ -29,6 +29,13 @@ public class RenderMap extends RenderBase<FieldMap>
     @Override
     public void render(FieldMap map, Graphics2D g)
     {
+        if (map.background() != null)
+        {
+            g.setClip(0, 0, WIDTH, HEIGHT);
+            textureRenderer.render(game.registry().texture(map.background()), g);
+            g.setClip(null);
+        }
+
         g.setColor(Color.GRAY);
 
         for (int x=0; x<=TILE_COLUMN; x++)
@@ -51,13 +58,14 @@ public class RenderMap extends RenderBase<FieldMap>
 
                 Tile tile = map.tileAt(i, j);
 
-                Texture texture = game.registry().texture(tile.texture());
+                if (tile.texture() != null)
+                {
+                    Texture texture = game.registry().texture(tile.texture());
 
-                g.translate(i *TILE_SIZE, j *TILE_SIZE);
-                textureRenderer.render(texture, g);
-                g.translate(-i *TILE_SIZE, -j *TILE_SIZE);
-
-
+                    g.translate(i *TILE_SIZE, j *TILE_SIZE);
+                    textureRenderer.render(texture, g);
+                    g.translate(-i *TILE_SIZE, -j *TILE_SIZE);
+                }
             }
         }
 

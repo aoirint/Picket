@@ -36,6 +36,10 @@ public class App
 
             screen.addPainter(game.renderer());
 
+            frame.addKeyListener(game.controller());
+            frame.addMouseListener(game.controller());
+            frame.addMouseMotionListener(game.controller());
+
             frame.setVisible(true);
 
             Thread thread = new Thread("Repainter")
@@ -49,7 +53,7 @@ public class App
 
                         try
                         {
-                            sleep(1000);
+                            sleep(16);
                         } catch (InterruptedException e)
                         {
                             e.printStackTrace();

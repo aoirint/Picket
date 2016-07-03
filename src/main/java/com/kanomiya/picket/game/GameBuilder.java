@@ -19,10 +19,11 @@ import com.google.common.collect.Maps;
 import com.kanomiya.picket.App;
 import com.kanomiya.picket.render.Texture;
 import com.kanomiya.picket.render.TextureLayer;
-import com.kanomiya.picket.tile.Tile;
 import com.kanomiya.picket.world.FieldMap;
 import com.kanomiya.picket.world.FieldType;
+import com.kanomiya.picket.world.Player;
 import com.kanomiya.picket.world.World;
+import com.kanomiya.picket.world.tile.Tile;
 
 
 public class GameBuilder
@@ -55,7 +56,18 @@ public class GameBuilder
 
         App.logger.info("Loaded " + world.maps().size() + " maps");
 
-        return new Game(info, world, registry);
+
+        @SuppressWarnings("unchecked")
+        Map<String, Object> playerData = yaml.loadAs(reader(file(path, "player.yaml")), Map.class);
+
+        FieldMap map = world.getMap((String) playerData.get("map"));
+        int x = (int) playerData.get("x");
+        int y = (int) playerData.get("y");
+        String texture = (String) playerData.get("texture");
+
+        Player player = new Player(map, x, y, texture);
+
+        return new Game(info, world, registry, player);
 
     }
 
@@ -108,7 +120,7 @@ public class GameBuilder
                 }
 
                 textureRegistry.put("missing", new Texture("missing", new TextureLayer("missing", 0d)));
-                tileRegistry.put("null", new Tile("null", "missing"));
+                tileRegistry.put("null", new Tile("null", null));
 
                 try
                 {
@@ -174,6 +186,14 @@ public class GameBuilder
 
                         });
                     }
+
+                    imageRegistry.forEach((id, image) ->
+                    {
+                        if (! textureRegistry.containsKey(id))
+                        {
+                            textureRegistry.put(id, new Texture(id, new TextureLayer(id, 0d)));
+                        }
+                    });
 
                     if (tileDir.exists())
                     {
@@ -258,6 +278,8 @@ public class GameBuilder
                                 int width = (int) mapData.get("width");
                                 int height = (int) mapData.get("height");
 
+                                String background = (String) mapData.getOrDefault("background", null);
+
                                 @SuppressWarnings("unchecked")
                                 List<List<String>> tileData = (List<List<String>>) mapData.get("tiles");
                                 Objects.requireNonNull(tileData, "Not found 'tiles' at map '" + id + "'");
@@ -323,7 +345,7 @@ public class GameBuilder
                                 }
 
 
-                                mapRegistry.put(id, new FieldMap(id, width, height, tiles, fieldTypes));
+                                mapRegistry.put(id, new FieldMap(id, width, height, background, tiles, fieldTypes));
 
                             } catch (FileNotFoundException e)
                             {

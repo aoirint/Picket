@@ -6,7 +6,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 import com.kanomiya.picket.render.Texture;
-import com.kanomiya.picket.tile.Tile;
+import com.kanomiya.picket.world.tile.Tile;
 
 public abstract class GameRegistry
 {

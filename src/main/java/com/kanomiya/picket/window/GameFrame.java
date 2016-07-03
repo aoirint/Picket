@@ -32,6 +32,7 @@ public class GameFrame extends Frame implements IScreenListener
                 System.exit(0);
             }
         });
+
     }
 
     @Override

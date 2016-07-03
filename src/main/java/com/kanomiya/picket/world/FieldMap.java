@@ -1,8 +1,12 @@
 package com.kanomiya.picket.world;
 
 import java.util.Arrays;
+import java.util.List;
 
-import com.kanomiya.picket.tile.Tile;
+import javax.annotation.Nullable;
+
+import com.kanomiya.picket.world.event.IngameEvent;
+import com.kanomiya.picket.world.tile.Tile;
 
 public class FieldMap
 {
@@ -10,12 +14,15 @@ public class FieldMap
     private int width, height;
     private Tile[][] tiles;
     private FieldType[][] fieldTypes;
+    private List<IngameEvent> events;
+    private String background;
 
-    public FieldMap(String id, int width, int height, Tile[][] tiles, FieldType[][] fieldTypes)
+    public FieldMap(String id, int width, int height, @Nullable String background, Tile[][] tiles, FieldType[][] fieldTypes)
     {
         this.id = id;
         this.width = width;
         this.height = height;
+        this.background = background;
         this.tiles = tiles;
         this.fieldTypes = fieldTypes;
     }
@@ -33,6 +40,12 @@ public class FieldMap
     public int height()
     {
         return height;
+    }
+
+    @Nullable
+    public String background()
+    {
+        return background;
     }
 
     public Tile tileAt(int x, int y)
