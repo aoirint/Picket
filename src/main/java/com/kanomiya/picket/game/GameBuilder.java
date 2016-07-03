@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Predicate;
 
 import javax.imageio.ImageIO;
@@ -15,9 +16,12 @@ import javax.imageio.ImageIO;
 import org.yaml.snakeyaml.Yaml;
 
 import com.google.common.collect.Maps;
+import com.kanomiya.picket.App;
 import com.kanomiya.picket.render.Texture;
 import com.kanomiya.picket.render.TextureLayer;
 import com.kanomiya.picket.tile.Tile;
+import com.kanomiya.picket.world.FieldMap;
+import com.kanomiya.picket.world.FieldType;
 import com.kanomiya.picket.world.World;
 
 
@@ -41,8 +45,13 @@ public class GameBuilder
     public Game build() throws FileNotFoundException
     {
         GameInfo info = buildInfo();
-        GameRegistry registry = buildRegistry();
-        World world = buildWorld();
+        GameRegistry registry = buildRegistry(info);
+
+        App.logger.info("Loaded " + registry.imageRegistry.size() + " images");
+        App.logger.info("Loaded " + registry.textureRegistry.size() + " textures");
+        App.logger.info("Loaded " + registry.tileRegistry.size() + " tiles");
+
+        World world = buildWorld(info, registry);
 
         return new Game(info, world, registry);
 
@@ -65,7 +74,7 @@ public class GameBuilder
         return new GameInfo(name, description, version, author, url);
     }
 
-    private GameRegistry buildRegistry()
+    private GameRegistry buildRegistry(GameInfo info)
     {
         final File registryDir = file(path, "registry");
         /*
@@ -84,9 +93,20 @@ public class GameBuilder
         return new GameRegistry()
         {
             {
-                tileRegistry = Maps.newHashMap();
                 imageRegistry = Maps.newHashMap();
                 textureRegistry = Maps.newHashMap();
+                tileRegistry = Maps.newHashMap();
+
+                try
+                {
+                    imageRegistry.put("missing", ImageIO.read(ClassLoader.getSystemResourceAsStream("missing.png")));
+                } catch (IOException e)
+                {
+                    e.printStackTrace();
+                }
+
+                textureRegistry.put("missing", new Texture("missing", new TextureLayer("missing", 0d)));
+                tileRegistry.put("null", new Tile("null", "missing"));
 
                 try
                 {
@@ -98,7 +118,7 @@ public class GameBuilder
                     {
                         walk(path(imgDir)).filter(imgPredicate).forEach((path) ->
                         {
-                            String id = path.getFileName().toString();
+                            String id = splitExtension(name(path));
                             File file = file(path);
 
                             try
@@ -117,7 +137,7 @@ public class GameBuilder
                     {
                         walk(path(textureDir)).filter(yamlPredicate).forEach((path) ->
                         {
-                            String id = path.getFileName().toString();
+                            String id = splitExtension(name(path));
                             File file = file(path);
 
                             try
@@ -153,7 +173,7 @@ public class GameBuilder
                     {
                         walk(path(tileDir), 1).filter(yamlPredicate).forEach((path) ->
                         {
-                            String id = path.getFileName().toString();
+                            String id = splitExtension(name(path));
                             File file = file(path);
 
                             try
@@ -183,7 +203,7 @@ public class GameBuilder
 
 
 
-    private World buildWorld()
+    private World buildWorld(GameInfo info, GameRegistry registry)
     {
         final File worldDir = file(path, "world");
         /*
@@ -203,6 +223,8 @@ public class GameBuilder
         return new World()
         {
             {
+                mapRegistry = Maps.newHashMap();
+
                 try
                 {
                     final File mapDir = file(worldDir, "maps");
@@ -211,7 +233,89 @@ public class GameBuilder
                     {
                         walk(path(mapDir), 1).filter(yamlPredicate).forEach((path) ->
                         {
+                            String id = splitExtension(name(path));
+                            File file = file(path);
 
+                            try
+                            {
+                                @SuppressWarnings("unchecked")
+                                Map<String, Object> mapData = yaml.loadAs(reader(file), Map.class);
+
+                                int width = (int) mapData.get("width");
+                                int height = (int) mapData.get("height");
+
+                                @SuppressWarnings("unchecked")
+                                List<List<String>> tileData = (List<List<String>>) mapData.get("tiles");
+                                Objects.requireNonNull(tileData, "Not found 'tiles' at map '" + id + "'");
+
+                                @SuppressWarnings("unchecked")
+                                List<List<String>> fieldTypeData = (List<List<String>>) mapData.get("fieldTypes");
+                                Objects.requireNonNull(fieldTypeData, "Not found 'fieldTypes' at map '" + id + "'");
+
+                                Tile[][] tiles = new Tile[width][height];
+                                FieldType[][] fieldTypes = new FieldType[width][height];
+
+                                Tile nullTile = registry.tileRegistry.get("null");
+
+                                for (int x=0, realW=tileData.size(); x<width; x++)
+                                {
+                                    List<String> line = (x < realW) ? tileData.get(x) : null;
+                                    int realH = line != null ? line.size() : 0;
+
+                                    for (int y=0; y<height; y++)
+                                    {
+                                        String tileId = y < realH && line != null ? line.get(x) : null;
+                                        Tile tile = tileId != null ? registry.tileRegistry.getOrDefault(tileId, nullTile) : nullTile;
+
+                                        tiles[x][y] = tile;
+                                    }
+                                }
+
+                                for (int x=0, realW=fieldTypeData.size(); x<width; x++)
+                                {
+                                    List<String> line = (x < realW) ? fieldTypeData.get(x) : null;
+                                    int realH = line != null ? line.size() : 0;
+
+                                    for (int y=0; y<height; y++)
+                                    {
+                                        String fieldTypeId = y < realH && line != null ? line.get(x) : null;
+                                        FieldType fieldType = FieldType.NORMAL;
+
+                                        if (fieldTypeId != null)
+                                        {
+                                            switch (fieldTypeId)
+                                            {
+                                            case "none":
+                                            case "o":
+                                                fieldType = FieldType.NORMAL;
+                                                break;
+                                            case "block":
+                                            case "x":
+                                                fieldType = FieldType.BLOCK;
+                                                break;
+                                            case "horizontal":
+                                            case "h":
+                                                fieldType = FieldType.HORIZONTAL_BLOCK;
+                                                break;
+                                            case "vertical":
+                                            case "v":
+                                                fieldType = FieldType.VERTICAL_BLOCK;
+                                                break;
+                                            }
+                                        }
+
+                                        fieldTypes[x][y] = fieldType;
+                                    }
+                                }
+
+
+
+                                mapRegistry.put(id, new FieldMap(id, width, height, tiles, fieldTypes));
+
+                            } catch (FileNotFoundException e)
+                            {
+                                e.printStackTrace();
+                            }
                         });
                     }
 

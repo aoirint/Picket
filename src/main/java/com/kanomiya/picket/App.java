@@ -22,6 +22,8 @@ public class App
             Game game = builder.build();
 
             logger.info(game.info());
+            logger.info(game.registry());
+            logger.info(game.world());
 
 
         } catch (FileNotFoundException e)

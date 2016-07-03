@@ -19,6 +19,16 @@ public class FileUtil
         return file.exists();
     }
 
+    public static String name(Path path)
+    {
+        return path.getFileName().toString();
+    }
+
+    public static String splitExtension(String fileName)
+    {
+        return fileName.substring(0, fileName.lastIndexOf('.'));
+    }
+
     public static File file(Path path)
     {
         return path.toFile();

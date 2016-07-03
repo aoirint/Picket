@@ -8,8 +8,8 @@ import com.kanomiya.picket.tile.Tile;
 
 public abstract class GameRegistry
 {
-    Map<String, Tile> tileRegistry;
     Map<String, BufferedImage> imageRegistry;
     Map<String, Texture> textureRegistry;
+    Map<String, Tile> tileRegistry;
 
 }
