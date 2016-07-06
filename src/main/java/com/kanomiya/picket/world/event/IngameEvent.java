@@ -4,11 +4,14 @@ import java.util.Map;
 
 import javax.annotation.Nullable;
 
+import com.google.common.collect.Maps;
+import com.kanomiya.picket.data.IDataSerializer;
 import com.kanomiya.picket.world.Direction;
 import com.kanomiya.picket.world.FieldMap;
 
 public class IngameEvent
 {
+    private final String id;
     public FieldMap map;
     public int x, y;
 
@@ -16,8 +19,9 @@ public class IngameEvent
     private String script;
     private Map<String, Object> eventRecords;
 
-    public IngameEvent(FieldMap map, int x, int y, @Nullable String texture, @Nullable String script, Map<String, Object> eventRecords)
+    public IngameEvent(String id, FieldMap map, int x, int y, @Nullable String texture, @Nullable String script, Map<String, Object> eventRecords)
     {
+        this.id = id;
         this.map = map;
         this.x = x;
         this.y = y;
@@ -78,5 +82,46 @@ public class IngameEvent
     {
         return move(dir.offsetX(), dir.offsetY(), force);
     }
+
+
+
+
+
+    public static class DataSerializerIngameEvent implements IDataSerializer<IngameEvent>
+    {
+        Map<String, FieldMap> mapRegistry;
+
+        public DataSerializerIngameEvent(Map<String, FieldMap> mapRegistry)
+        {
+            this.mapRegistry = mapRegistry;
+        }
+
+        @Override
+        public Map<String, Object> serialize(IngameEvent event)
+        {
+
+            return null;
+        }
+
+        @Override
+        public IngameEvent deserialize(Map<String, Object> map)
+        {
+            String id = (String) map.get("id");
+
+            FieldMap fieldMap = mapRegistry.get(map.get("map"));
+            int x = (int) map.get("x");
+            int y = (int) map.get("y");
+            String texture = (String) map.getOrDefault("texture", null);
+            String script = (String) map.getOrDefault("script", null);
+
+            @SuppressWarnings("unchecked")
+            Map<String, Object> eventRecords = (Map<String, Object>) map.get("records");
+            if (eventRecords == null) eventRecords = Maps.newHashMap();
+
+            return new IngameEvent(id, fieldMap, x, y, texture, script, eventRecords);
+        }
+
+    }
+
 
 }

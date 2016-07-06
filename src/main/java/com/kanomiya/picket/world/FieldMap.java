@@ -3,9 +3,13 @@ package com.kanomiya.picket.world;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import javax.annotation.Nullable;
 
+import com.google.common.collect.Maps;
+import com.kanomiya.picket.data.IDataSerializer;
+import com.kanomiya.picket.game.GameRegistry;
 import com.kanomiya.picket.world.event.IngameEvent;
 import com.kanomiya.picket.world.tile.Tile;
 
@@ -78,5 +82,111 @@ public class FieldMap
                         ? Arrays.asList(fieldTypes).subList(0, Math.min(fieldTypes.length, maxLen)) : null)
                 + "]";
     }
+
+
+
+
+    public static class DataSerializerFieldMap implements IDataSerializer<FieldMap>
+    {
+        private final GameRegistry registry;
+
+        public DataSerializerFieldMap(GameRegistry registry)
+        {
+            this.registry = registry;
+        }
+
+        @Override
+        public Map<String, Object> serialize(FieldMap fieldMap)
+        {
+
+            return null;
+        }
+
+        @Override
+        public FieldMap deserialize(Map<String, Object> map)
+        {
+            String id = (String) map.get("id");
+
+
+
+            int width = (int) map.get("width");
+            int height = (int) map.get("height");
+
+            String background = (String) map.getOrDefault("background", null);
+
+            @SuppressWarnings("unchecked")
+            List<List<String>> tileData = (List<List<String>>) map.get("tiles");
+            Objects.requireNonNull(tileData, "Not found 'tiles' at map '" + id + "'");
+
+            @SuppressWarnings("unchecked")
+            List<List<String>> fieldTypeData = (List<List<String>>) map.get("fieldTypes");
+            Objects.requireNonNull(fieldTypeData, "Not found 'fieldTypes' at map '" + id + "'");
+
+            Tile[][] tiles = new Tile[width][height];
+            FieldType[][] fieldTypes = new FieldType[width][height];
+
+            Tile nullTile = registry.tileRegistry.get("null");
+
+            for (int y=0, realH=tileData.size(); y<height; y++)
+            {
+                List<String> line = (y < realH) ? tileData.get(y) : null;
+                int realW = line != null ? line.size() : 0;
+
+                for (int x=0; x<width; x++)
+                {
+                    String tileId = x < realW && line != null ? line.get(x) : null;
+                    Tile tile = tileId != null ? registry.tileRegistry.getOrDefault(tileId, nullTile) : nullTile;
+
+                    tiles[x][y] = tile;
+                }
+            }
+
+            for (int y=0, realH=fieldTypeData.size(); y<height; y++)
+            {
+                List<String> line = (y < realH) ? fieldTypeData.get(y) : null;
+                int realW = line != null ? line.size() : 0;
+
+                for (int x=0; x<width; x++)
+                {
+                    String fieldTypeId = x < realW && line != null ? line.get(x) : null;
+                    FieldType fieldType = FieldType.BLOCK;
+
+                    if (fieldTypeId != null)
+                    {
+                        switch (fieldTypeId)
+                        {
+                        case "none":
+                        case "o":
+                            fieldType = FieldType.NORMAL;
+                            break;
+                        case "block":
+                        case "x":
+                            fieldType = FieldType.BLOCK;
+                            break;
+                        case "horizontal":
+                        case "h":
+                            fieldType = FieldType.HORIZONTAL_BLOCK;
+                            break;
+                        case "vertical":
+                        case "v":
+                            fieldType = FieldType.VERTICAL_BLOCK;
+                            break;
+                        }
+                    }
+
+                    fieldTypes[x][y] = fieldType;
+                }
+            }
+
+
+            @SuppressWarnings("unchecked")
+            Map<String, Object> mapRecords = (Map<String, Object>) map.get("records");
+            if (mapRecords == null) mapRecords = Maps.newHashMap();
+
+            return new FieldMap(id, width, height, background, tiles, fieldTypes, mapRecords);
+        }
+
+    }
+
 
 }

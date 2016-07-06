@@ -1,6 +1,10 @@
 package com.kanomiya.picket.world.tile;
 
+import java.util.Map;
+
 import javax.annotation.Nullable;
+
+import com.kanomiya.picket.data.IDataSerializer;
 
 public class Tile
 {
@@ -25,5 +29,25 @@ public class Tile
     }
 
 
+    public static class DataSerializerTile implements IDataSerializer<Tile>
+    {
 
+        @Override
+        public Map<String, Object> serialize(Tile tile)
+        {
+
+            return null;
+        }
+
+        @Override
+        public Tile deserialize(Map<String, Object> map)
+        {
+            String id = (String) map.get("id");
+
+            String texture = (String) map.getOrDefault("texture", "tiles/" + id);
+
+            return new Tile(id, texture);
+        }
+
+    }
 }

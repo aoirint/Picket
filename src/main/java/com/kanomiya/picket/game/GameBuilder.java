@@ -6,24 +6,16 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.Predicate;
-
-import javax.imageio.ImageIO;
 
 import org.yaml.snakeyaml.Yaml;
 
 import com.google.common.collect.Maps;
 import com.kanomiya.picket.App;
-import com.kanomiya.picket.render.Texture;
-import com.kanomiya.picket.render.TextureLayer;
-import com.kanomiya.picket.world.FieldMap;
-import com.kanomiya.picket.world.FieldType;
+import com.kanomiya.picket.game.GameRegistry.DataSerializerGameRegistry;
 import com.kanomiya.picket.world.World;
-import com.kanomiya.picket.world.event.IngameEvent;
-import com.kanomiya.picket.world.tile.Tile;
+import com.kanomiya.picket.world.World.DataSerializerWorld;
 
 
 public class GameBuilder
@@ -46,13 +38,16 @@ public class GameBuilder
     public Game build() throws FileNotFoundException
     {
         GameInfo info = buildInfo();
-        GameRegistry registry = buildRegistry(info);
+        Map<String, Object> registryMap = buildRegistryData();
+        GameRegistry registry = new DataSerializerGameRegistry().deserialize(registryMap);
 
         App.logger.info("Loaded " + registry.imageRegistry.size() + " images");
         App.logger.info("Loaded " + registry.textureRegistry.size() + " textures");
         App.logger.info("Loaded " + registry.tileRegistry.size() + " tiles");
 
-        World world = buildWorld(info, registry);
+        Map<String, Object> worldMap = buildWorldData();
+        World world = new DataSerializerWorld(registry).deserialize(worldMap);
+
 
         App.logger.info("Loaded " + world.maps().size() + " maps");
 
@@ -84,345 +79,224 @@ public class GameBuilder
         return new GameInfo(name, description, version, author, url);
     }
 
-    private GameRegistry buildRegistry(GameInfo info)
+    private Map<String, Object> buildRegistryData()
     {
         final File registryDir = file(path, "registry");
-        /*
+        final Map<String, Object> pool = Maps.newHashMap();
+
         final File registryFile = file(registryDir, "registry.yaml");
 
-        try
+        if (registryFile.exists())
         {
-            Map registryData = yaml.loadAs(reader(registryFile), Map.class);
-
-        } catch (FileNotFoundException e)
-        {
-            e.printStackTrace();
-        }
-        */
-
-        return new GameRegistry()
-        {
+            try
             {
-                imageRegistry = Maps.newHashMap();
-                textureRegistry = Maps.newHashMap();
-                tileRegistry = Maps.newHashMap();
+                @SuppressWarnings("unchecked")
+                Map<String, Object> registryData = yaml.loadAs(reader(registryFile), Map.class);
 
-                try
-                {
-                    imageRegistry.put("missing", ImageIO.read(ClassLoader.getSystemResourceAsStream("missing.png")));
-                } catch (IOException e)
-                {
-                    e.printStackTrace();
-                }
+                pool.putAll(registryData);
 
-                textureRegistry.put("missing", new Texture("missing", new TextureLayer("missing", 0d)));
-                tileRegistry.put("null", new Tile("null", null));
-
-                try
-                {
-                    File imgDir = file(registryDir, "images");
-                    File textureDir = file(registryDir, "textures");
-                    File tileDir = file(registryDir, "tiles");
-
-                    if (imgDir.exists())
-                    {
-                        Path imgDirPath = path(imgDir);
-
-                        walk(imgDirPath).filter(imgPredicate).forEach((path) ->
-                        {
-                            String id = splitExtension(str(imgDirPath.relativize(path)));
-                            File file = file(path);
-
-                            try
-                            {
-                                imageRegistry.put(id, ImageIO.read(file));
-
-                            } catch (IOException e)
-                            {
-                                e.printStackTrace();
-                            }
-
-                        });
-                    }
-
-                    if (textureDir.exists())
-                    {
-                        Path textureDirPath = path(textureDir);
-
-                        walk(textureDirPath).filter(yamlPredicate).forEach((path) ->
-                        {
-                            String id = splitExtension(str(textureDirPath.relativize(path)));
-                            File file = file(path);
-
-                            try
-                            {
-                                @SuppressWarnings("unchecked")
-                                Map<String, Object> textureData = yaml.loadAs(reader(file), Map.class);
-
-                                @SuppressWarnings("unchecked")
-                                List<Map<String, Object>> layerDataList = (List<Map<String, Object>>) textureData.get("layers");
-                                TextureLayer[] layers = new TextureLayer[layerDataList.size()];
-
-                                for (int i=0, len=layerDataList.size(); i<len; i++)
-                                {
-                                    Map<String, Object> layerData = layerDataList.get(i);
-
-                                    String imageId = (String) layerData.get("image");
-                                    double rotate = (double) layerData.getOrDefault("rotate", 0d);
-
-                                    layers[i] = new TextureLayer(imageId, rotate);
-                                }
-
-                                textureRegistry.put(id, new Texture(id, layers));
-
-                            } catch (FileNotFoundException e)
-                            {
-                                e.printStackTrace();
-                            }
-
-                        });
-                    }
-
-                    imageRegistry.forEach((id, image) ->
-                    {
-                        if (! textureRegistry.containsKey(id))
-                        {
-                            textureRegistry.put(id, new Texture(id, new TextureLayer(id, 0d)));
-                        }
-                    });
-
-                    if (tileDir.exists())
-                    {
-                        walk(path(tileDir), 1).filter(yamlPredicate).forEach((path) ->
-                        {
-                            String id = splitExtension(name(path));
-                            File file = file(path);
-
-                            try
-                            {
-                                @SuppressWarnings("unchecked")
-                                Map<String, Object> tileData = yaml.loadAs(reader(file), Map.class);
-
-                                String texture = (String) tileData.getOrDefault("texture", "tiles/" + id);
-
-
-                                if (! textureRegistry.containsKey(texture) && imageRegistry.containsKey(texture))
-                                {
-                                    textureRegistry.put(texture, new Texture(texture, new TextureLayer(texture, 0d)));
-                                }
-
-
-                                tileRegistry.put(id, new Tile(id, texture));
-
-                            } catch (FileNotFoundException e)
-                            {
-                                e.printStackTrace();
-                            }
-
-                        });
-                    }
-
-                } catch (IOException e)
-                {
-                    e.printStackTrace();
-                }
+            } catch (FileNotFoundException e)
+            {
+                e.printStackTrace();
             }
-        };
-    }
 
-
-
-    private World buildWorld(GameInfo info, GameRegistry registry)
-    {
-        final File worldDir = file(path, "world");
-        /*
-        final File worldFile = file(worldDir, "world.yaml");
-
-        try
-        {
-            Map worldData = yaml.loadAs(reader(worldFile), Map.class);
-
-        } catch (FileNotFoundException e)
-        {
-            e.printStackTrace();
         }
-        */
 
 
-        return new World()
+        final File imgDir = file(registryDir, "images");
+        final File textureDir = file(registryDir, "textures");
+        final File tileDir = file(registryDir, "tiles");
+
+        if (imgDir.exists())
         {
+            final Path imgDirPath = path(imgDir);
+            Map<String, String> imageMap = Maps.newHashMap();
+
+            try
             {
-                mapRegistry = Maps.newHashMap();
-                globalEventRegistry = Maps.newHashMap();
-
-
-                final File worldFile = file(worldDir, "world.yaml");
-
-                if (worldFile.exists())
+                walk(imgDirPath).filter(imgPredicate).forEach((path) ->
                 {
+                    String id = splitExtension(str(imgDirPath.relativize(path)));
+                    File file = file(path);
+
+                    imageMap.put(id, file.getAbsolutePath());
+                });
+
+            } catch (IOException e)
+            {
+                e.printStackTrace();
+            }
+
+            pool.put("images", imageMap);
+        }
+
+        if (textureDir.exists())
+        {
+            final Path textureDirPath = path(textureDir);
+            Map<String, Map<String, Object>> textureMap = Maps.newHashMap();
+
+            try
+            {
+                walk(textureDirPath).filter(yamlPredicate).forEach((path) ->
+                {
+                    String id = splitExtension(str(textureDirPath.relativize(path)));
+                    File file = file(path);
+
                     try
                     {
                         @SuppressWarnings("unchecked")
-                        Map<String, Object> worldData = yaml.loadAs(reader(worldFile), Map.class);
+                        Map<String, Object> textureData = yaml.loadAs(reader(file), Map.class);
+                        textureData.put("id", id);
 
-                        @SuppressWarnings("unchecked")
-                        Map<String, Object> worldRecords = (Map<String, Object>) worldData.get("records");
-                        this.worldRecords = worldRecords != null ? worldRecords : Maps.newHashMap();
+                        textureMap.put(id, textureData);
 
                     } catch (FileNotFoundException e)
                     {
                         e.printStackTrace();
                     }
-                } else worldRecords = Maps.newHashMap();
+                });
 
-
-                try
-                {
-                    final File mapDir = file(worldDir, "maps");
-
-                    if (mapDir.exists())
-                    {
-                        walk(path(mapDir), 1).filter(yamlPredicate).forEach((path) ->
-                        {
-                            String id = splitExtension(name(path));
-                            File file = file(path);
-
-
-                            try
-                            {
-                                @SuppressWarnings("unchecked")
-                                Map<String, Object> mapData = yaml.loadAs(reader(file), Map.class);
-
-                                int width = (int) mapData.get("width");
-                                int height = (int) mapData.get("height");
-
-                                String background = (String) mapData.getOrDefault("background", null);
-
-                                @SuppressWarnings("unchecked")
-                                List<List<String>> tileData = (List<List<String>>) mapData.get("tiles");
-                                Objects.requireNonNull(tileData, "Not found 'tiles' at map '" + id + "'");
-
-                                @SuppressWarnings("unchecked")
-                                List<List<String>> fieldTypeData = (List<List<String>>) mapData.get("fieldTypes");
-                                Objects.requireNonNull(fieldTypeData, "Not found 'fieldTypes' at map '" + id + "'");
-
-                                Tile[][] tiles = new Tile[width][height];
-                                FieldType[][] fieldTypes = new FieldType[width][height];
-
-                                Tile nullTile = registry.tileRegistry.get("null");
-
-                                for (int y=0, realH=tileData.size(); y<height; y++)
-                                {
-                                    List<String> line = (y < realH) ? tileData.get(y) : null;
-                                    int realW = line != null ? line.size() : 0;
-
-                                    for (int x=0; x<width; x++)
-                                    {
-                                        String tileId = x < realW && line != null ? line.get(x) : null;
-                                        Tile tile = tileId != null ? registry.tileRegistry.getOrDefault(tileId, nullTile) : nullTile;
-
-                                        tiles[x][y] = tile;
-                                    }
-                                }
-
-                                for (int y=0, realH=fieldTypeData.size(); y<height; y++)
-                                {
-                                    List<String> line = (y < realH) ? fieldTypeData.get(y) : null;
-                                    int realW = line != null ? line.size() : 0;
-
-                                    for (int x=0; x<width; x++)
-                                    {
-                                        String fieldTypeId = x < realW && line != null ? line.get(x) : null;
-                                        FieldType fieldType = FieldType.BLOCK;
-
-                                        if (fieldTypeId != null)
-                                        {
-                                            switch (fieldTypeId)
-                                            {
-                                            case "none":
-                                            case "o":
-                                                fieldType = FieldType.NORMAL;
-                                                break;
-                                            case "block":
-                                            case "x":
-                                                fieldType = FieldType.BLOCK;
-                                                break;
-                                            case "horizontal":
-                                            case "h":
-                                                fieldType = FieldType.HORIZONTAL_BLOCK;
-                                                break;
-                                            case "vertical":
-                                            case "v":
-                                                fieldType = FieldType.VERTICAL_BLOCK;
-                                                break;
-                                            }
-                                        }
-
-                                        fieldTypes[x][y] = fieldType;
-                                    }
-                                }
-
-
-                                @SuppressWarnings("unchecked")
-                                Map<String, Object> mapRecords = (Map<String, Object>) mapData.get("records");
-                                if (mapRecords == null) mapRecords = Maps.newHashMap();
-
-                                mapRegistry.put(id, new FieldMap(id, width, height, background, tiles, fieldTypes, mapRecords));
-
-                            } catch (FileNotFoundException e)
-                            {
-                                e.printStackTrace();
-                            }
-                        });
-                    }
-
-                } catch (IOException e)
-                {
-                    e.printStackTrace();
-                }
-
-                try
-                {
-                    final File eventDir = file(worldDir, "events");
-
-                    if (eventDir.exists())
-                    {
-                        walk(path(eventDir), 1).filter(yamlPredicate).forEach((path) ->
-                        {
-                            String id = splitExtension(name(path));
-                            File file = file(path);
-
-                            try
-                            {
-                                @SuppressWarnings("unchecked")
-                                Map<String, Object> eventData = yaml.loadAs(reader(file), Map.class);
-
-                                FieldMap map = mapRegistry.get(eventData.get("map"));
-                                int x = (int) eventData.get("x");
-                                int y = (int) eventData.get("y");
-                                String texture = (String) eventData.getOrDefault("texture", null);
-                                String script = (String) eventData.getOrDefault("script", null);
-
-                                @SuppressWarnings("unchecked")
-                                Map<String, Object> eventRecords = (Map<String, Object>) eventData.get("records");
-                                if (eventRecords == null) eventRecords = Maps.newHashMap();
-
-                                globalEventRegistry.put(id, new IngameEvent(map, x, y, texture, script, eventRecords));
-
-                            } catch (FileNotFoundException e)
-                            {
-                                e.printStackTrace();
-                            }
-                        });
-                    }
-
-                } catch (IOException e)
-                {
-                    e.printStackTrace();
-                }
-
+            } catch (IOException e)
+            {
+                e.printStackTrace();
             }
-        };
+
+            pool.put("textures", textureMap);
+        }
+
+        if (tileDir.exists())
+        {
+            Map<String, Map<String, Object>> tileMap = Maps.newHashMap();
+
+            try
+            {
+                walk(path(tileDir), 1).filter(yamlPredicate).forEach((path) ->
+                {
+                    String id = splitExtension(name(path));
+                    File file = file(path);
+
+                    try
+                    {
+                        @SuppressWarnings("unchecked")
+                        Map<String, Object> tileData = yaml.loadAs(reader(file), Map.class);
+                        tileData.put("id", id);
+
+                        tileMap.put(id, tileData);
+
+                    } catch (FileNotFoundException e)
+                    {
+                        e.printStackTrace();
+                    }
+
+                });
+
+            } catch (IOException e)
+            {
+                e.printStackTrace();
+            }
+
+            pool.put("tiles", tileMap);
+        }
+
+
+
+        return pool;
+    }
+
+
+
+    private Map<String, Object> buildWorldData()
+    {
+        final File worldDir = file(path, "world");
+        final Map<String, Object> pool = Maps.newHashMap();
+
+
+
+        final File worldFile = file(worldDir, "world.yaml");
+
+        if (worldFile.exists())
+        {
+            try
+            {
+                @SuppressWarnings("unchecked")
+                Map<String, Object> worldData = yaml.loadAs(reader(worldFile), Map.class);
+                pool.putAll(worldData);
+
+            } catch (FileNotFoundException e)
+            {
+                e.printStackTrace();
+            }
+        }
+
+
+        final File mapDir = file(worldDir, "maps");
+
+        if (mapDir.exists())
+        {
+            try
+            {
+                Map<String, Object> maps = Maps.newHashMap();
+
+                walk(path(mapDir), 1).filter(yamlPredicate).forEach((path) ->
+                {
+                    String id = splitExtension(name(path));
+                    File file = file(path);
+
+                    try
+                    {
+                        @SuppressWarnings("unchecked")
+                        Map<String, Object> mapData = yaml.loadAs(reader(file), Map.class);
+                        maps.put(id, mapData);
+
+                    } catch (FileNotFoundException e)
+                    {
+                        e.printStackTrace();
+                    }
+                });
+
+                pool.put("maps", maps);
+
+            } catch (IOException e)
+            {
+                e.printStackTrace();
+            }
+        }
+
+
+        final File eventDir = file(worldDir, "events");
+
+        if (eventDir.exists())
+        {
+            try
+            {
+                Map<String, Object> events = Maps.newHashMap();
+
+                walk(path(eventDir), 1).filter(yamlPredicate).forEach((path) ->
+                {
+                    String id = splitExtension(name(path));
+                    File file = file(path);
+
+                    try
+                    {
+                        @SuppressWarnings("unchecked")
+                        Map<String, Object> eventData = yaml.loadAs(reader(file), Map.class);
+                        events.put(id, eventData);
+
+                    } catch (FileNotFoundException e)
+                    {
+                        e.printStackTrace();
+                    }
+                });
+
+                pool.put("events", events);
+
+            } catch (IOException e)
+            {
+                e.printStackTrace();
+            }
+        }
+
+        return pool;
     }
 
 

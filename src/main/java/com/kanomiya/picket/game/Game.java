@@ -28,8 +28,8 @@ public class Game
         this.registry = registry;
         this.globalRecords = globalRecords;
 
-        this.observer = globalRecords.containsKey("observer") ? world.globalEvent((String) globalRecords.get("observer")) : null;
-        this.actor = globalRecords.containsKey("actor") ? world.globalEvent((String) globalRecords.get("actor")) : null;
+        this.observer = globalRecords.containsKey("observer") ? world.worldEvent((String) globalRecords.get("observer")) : null;
+        this.actor = globalRecords.containsKey("actor") ? world.worldEvent((String) globalRecords.get("actor")) : null;
 
         this.renderer = new GameRenderer(this);
         this.controller = new GameController(this);

@@ -2,5 +2,15 @@ _dummy: dummy
 width: 15
 height: 15
 background: backgrounds/purpleSky
-tiles: [[dirt,dirt,dirt,dirt,dirt,dirt,dirt]]
-fieldTypes: [[o,o,o,o]]
+tiles: [
+        [dirt,dirt,dirt,dirt,dirt,dirt,dirt],
+        [dirt,dirt,dirt,dirt,dirt,dirt,dirt],
+        [dirt,dirt,dirt,dirt,dirt,dirt,dirt],
+        [dirt,dirt,dirt,dirt,dirt,dirt,dirt],
+]
+fieldTypes: [
+    [o,o,o,o,o,o,o],
+    [o,o,o,o,o,o,o],
+    [o,o,o,o,o,o,o],
+    [o,o,o,o,o,o,o],
+]
