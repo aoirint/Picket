@@ -110,7 +110,9 @@ public class GameBuilder
         if (imgDir.exists())
         {
             final Path imgDirPath = path(imgDir);
-            Map<String, String> imageMap = Maps.newHashMap();
+
+            @SuppressWarnings("unchecked")
+            final Map<String, String> imageMap = pool.containsKey("images") ? (Map<String, String>) pool.get("images") : Maps.newHashMap();
 
             try
             {
@@ -133,7 +135,9 @@ public class GameBuilder
         if (textureDir.exists())
         {
             final Path textureDirPath = path(textureDir);
-            Map<String, Map<String, Object>> textureMap = Maps.newHashMap();
+
+            @SuppressWarnings("unchecked")
+            Map<String, Map<String, Object>> textureMap = pool.containsKey("textures") ? (Map<String, Map<String, Object>>) pool.get("textures") : Maps.newHashMap();
 
             try
             {
@@ -146,7 +150,6 @@ public class GameBuilder
                     {
                         @SuppressWarnings("unchecked")
                         Map<String, Object> textureData = yaml.loadAs(reader(file), Map.class);
-                        textureData.put("id", id);
 
                         textureMap.put(id, textureData);
 
@@ -164,9 +167,11 @@ public class GameBuilder
             pool.put("textures", textureMap);
         }
 
+
         if (tileDir.exists())
         {
-            Map<String, Map<String, Object>> tileMap = Maps.newHashMap();
+            @SuppressWarnings("unchecked")
+            Map<String, Map<String, Object>> tileMap = pool.containsKey("tiles") ? (Map<String, Map<String, Object>>) pool.get("tiles") : Maps.newHashMap();
 
             try
             {
@@ -235,7 +240,8 @@ public class GameBuilder
         {
             try
             {
-                Map<String, Object> maps = Maps.newHashMap();
+                @SuppressWarnings("unchecked")
+                Map<String, Map<String, Object>> maps = pool.containsKey("maps") ? (Map<String, Map<String, Object>>) pool.get("maps") : Maps.newHashMap();
 
                 walk(path(mapDir), 1).filter(yamlPredicate).forEach((path) ->
                 {
@@ -269,7 +275,8 @@ public class GameBuilder
         {
             try
             {
-                Map<String, Object> events = Maps.newHashMap();
+                @SuppressWarnings("unchecked")
+                Map<String, Map<String, Object>> events = pool.containsKey("events") ? (Map<String, Map<String, Object>>) pool.get("events") : Maps.newHashMap();
 
                 walk(path(eventDir), 1).filter(yamlPredicate).forEach((path) ->
                 {

@@ -29,6 +29,12 @@ public class IngameEvent
         this.eventRecords = eventRecords;
     }
 
+
+    public String id()
+    {
+        return id;
+    }
+
     @Nullable
     public String texture()
     {
