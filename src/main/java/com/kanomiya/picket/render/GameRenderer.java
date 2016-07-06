@@ -41,9 +41,9 @@ public class GameRenderer implements IScreenPainter
             mapRenderer.setCamera(observer);
             mapRenderer.render(map, g);
 
-            g.translate(RenderMap.WIDTH/2 -RenderMap.TILE_SIZE/2, RenderMap.HEIGHT/2 -RenderMap.TILE_SIZE/2);
+            g.translate((observer.x -mapRenderer.cameraX()) *RenderMap.TILE_SIZE, (observer.y -mapRenderer.cameraY()) *RenderMap.TILE_SIZE);
             eventRenderer.render(observer, g);
-            g.translate(-RenderMap.WIDTH/2 +RenderMap.TILE_SIZE/2, -RenderMap.HEIGHT/2 +RenderMap.TILE_SIZE/2);
+            g.translate(-(observer.x -mapRenderer.cameraX()) *RenderMap.TILE_SIZE, -(observer.y -mapRenderer.cameraY()) *RenderMap.TILE_SIZE);
 
         }
 

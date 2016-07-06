@@ -20,7 +20,7 @@ public class RenderMap extends RenderBase<FieldMap>
 
 
     private final TextureRenderInfo renderInfo;
-    public int cameraX, cameraY;
+    private int cameraX, cameraY;
 
     public RenderMap(Game game)
     {
@@ -33,8 +33,31 @@ public class RenderMap extends RenderBase<FieldMap>
 
     public void setCamera(IngameEvent observer)
     {
-        cameraX = observer.x -TILE_COLUMN/2;
-        cameraY = observer.y -TILE_ROW/2;
+        int cameraX = observer.x -TILE_COLUMN/2;
+        int cameraY = observer.y -TILE_ROW/2;
+
+        if (cameraX < 0) cameraX = 0;
+        else if (observer.map.width() <= cameraX) cameraX = observer.map.width() -1 -TILE_COLUMN/2;
+
+        if (cameraY < 0) cameraY = 0;
+        else if (observer.map.height() <= cameraY) cameraY = observer.map.height() -1 -TILE_ROW/2;
+
+        setCamera(cameraX, cameraY);
+    }
+
+    public void setCamera(int cameraX, int cameraY)
+    {
+        this.cameraX = cameraX;
+        this.cameraY = cameraY;
+    }
+
+    public int cameraX()
+    {
+        return cameraX;
+    }
+    public int cameraY()
+    {
+        return cameraY;
     }
 
     @Override
