@@ -7,7 +7,7 @@ import com.kanomiya.picket.game.Game;
 import com.kanomiya.picket.render.screen.IScreenPainter;
 import com.kanomiya.picket.render.screen.Screen;
 import com.kanomiya.picket.world.FieldMap;
-import com.kanomiya.picket.world.event.IngameEvent;
+import com.kanomiya.picket.world.IngameEvent;
 
 public class GameRenderer implements IScreenPainter
 {

@@ -1,6 +1,6 @@
 package com.kanomiya.picket.game;
 
-import static com.kanomiya.picket.game.FileUtil.*;
+import static com.kanomiya.picket.util.FileUtil.*;
 
 import java.io.File;
 import java.io.FileNotFoundException;

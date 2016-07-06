@@ -4,8 +4,8 @@ import java.util.Map;
 
 import com.kanomiya.picket.control.GameController;
 import com.kanomiya.picket.render.GameRenderer;
+import com.kanomiya.picket.world.IngameEvent;
 import com.kanomiya.picket.world.World;
-import com.kanomiya.picket.world.event.IngameEvent;
 
 public class Game
 {

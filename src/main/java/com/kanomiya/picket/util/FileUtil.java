@@ -1,4 +1,4 @@
-package com.kanomiya.picket.game;
+package com.kanomiya.picket.util;
 
 import java.io.File;
 import java.io.FileInputStream;

@@ -11,11 +11,11 @@ import java.util.Map;
 import javax.imageio.ImageIO;
 
 import com.google.common.collect.Maps;
-import com.kanomiya.picket.data.IDataSerializer;
 import com.kanomiya.picket.render.Texture;
 import com.kanomiya.picket.render.TextureLayer;
-import com.kanomiya.picket.world.tile.Tile;
-import com.kanomiya.picket.world.tile.Tile.DataSerializerTile;
+import com.kanomiya.picket.util.IDataSerializer;
+import com.kanomiya.picket.world.Tile;
+import com.kanomiya.picket.world.Tile.DataSerializerTile;
 
 public class GameRegistry
 {

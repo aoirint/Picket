@@ -5,7 +5,7 @@ import java.awt.Graphics2D;
 
 import com.kanomiya.picket.game.Game;
 import com.kanomiya.picket.world.FieldMap;
-import com.kanomiya.picket.world.tile.Tile;
+import com.kanomiya.picket.world.Tile;
 
 public class RenderMap extends RenderBase<FieldMap>
 {

@@ -1,10 +1,10 @@
-package com.kanomiya.picket.world.tile;
+package com.kanomiya.picket.world;
 
 import java.util.Map;
 
 import javax.annotation.Nullable;
 
-import com.kanomiya.picket.data.IDataSerializer;
+import com.kanomiya.picket.util.IDataSerializer;
 
 public class Tile
 {

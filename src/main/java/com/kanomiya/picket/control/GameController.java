@@ -11,7 +11,7 @@ import java.awt.event.MouseMotionListener;
 
 import com.kanomiya.picket.game.Game;
 import com.kanomiya.picket.world.Direction;
-import com.kanomiya.picket.world.event.IngameEvent;
+import com.kanomiya.picket.world.IngameEvent;
 
 public class GameController implements KeyListener, MouseListener, MouseMotionListener
 {

@@ -1,4 +1,4 @@
-package com.kanomiya.picket.data;
+package com.kanomiya.picket.util;
 
 import java.util.Map;
 

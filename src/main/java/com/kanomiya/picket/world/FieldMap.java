@@ -8,10 +8,8 @@ import java.util.Objects;
 import javax.annotation.Nullable;
 
 import com.google.common.collect.Maps;
-import com.kanomiya.picket.data.IDataSerializer;
 import com.kanomiya.picket.game.GameRegistry;
-import com.kanomiya.picket.world.event.IngameEvent;
-import com.kanomiya.picket.world.tile.Tile;
+import com.kanomiya.picket.util.IDataSerializer;
 
 public class FieldMap
 {
