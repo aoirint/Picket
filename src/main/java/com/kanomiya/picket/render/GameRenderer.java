@@ -37,9 +37,13 @@ public class GameRenderer implements IScreenPainter
             IngameEvent observer = game.observer();
 
             FieldMap map = observer.map;
+
+            mapRenderer.setCamera(observer);
             mapRenderer.render(map, g);
 
+            g.translate(RenderMap.WIDTH/2 -RenderMap.TILE_SIZE/2, RenderMap.HEIGHT/2 -RenderMap.TILE_SIZE/2);
             eventRenderer.render(observer, g);
+            g.translate(-RenderMap.WIDTH/2 +RenderMap.TILE_SIZE/2, -RenderMap.HEIGHT/2 +RenderMap.TILE_SIZE/2);
 
         }
 

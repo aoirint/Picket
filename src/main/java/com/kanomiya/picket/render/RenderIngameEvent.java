@@ -16,7 +16,6 @@ public class RenderIngameEvent extends RenderBase<IngameEvent>
     @Override
     public void render(IngameEvent event, Graphics2D g)
     {
-        g.translate(event.x *RenderMap.TILE_SIZE, event.y *RenderMap.TILE_SIZE);
 
         Texture texture = event.texture();
 
@@ -26,7 +25,6 @@ public class RenderIngameEvent extends RenderBase<IngameEvent>
 
         }
 
-        g.translate(-event.x *RenderMap.TILE_SIZE, -event.y *RenderMap.TILE_SIZE);
     }
 
 }
