@@ -17,13 +17,10 @@ public class RenderMap extends RenderBase<FieldMap>
     public static final int WIDTH = TILE_COLUMN * TILE_SIZE;
     public static final int HEIGHT = TILE_ROW * TILE_SIZE;
 
-    private RenderTexture textureRenderer;
 
     public RenderMap(Game game)
     {
         super(game);
-
-        textureRenderer = new RenderTexture(game);
     }
 
     @Override
@@ -32,7 +29,7 @@ public class RenderMap extends RenderBase<FieldMap>
         if (map.background() != null)
         {
             g.setClip(0, 0, WIDTH, HEIGHT);
-            textureRenderer.render(game.registry().texture(map.background()), g);
+            renderTexture(game.registry().texture(map.background()), null, g);
             g.setClip(null);
         }
 
@@ -60,10 +57,10 @@ public class RenderMap extends RenderBase<FieldMap>
 
                 if (tile.texture() != null)
                 {
-                    Texture texture = game.registry().texture(tile.texture());
+                    Texture texture = tile.texture();
 
                     g.translate(i *TILE_SIZE, j *TILE_SIZE);
-                    textureRenderer.render(texture, g);
+                    renderTexture(texture, null, g);
                     g.translate(-i *TILE_SIZE, -j *TILE_SIZE);
                 }
             }

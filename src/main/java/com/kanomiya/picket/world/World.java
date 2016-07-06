@@ -78,10 +78,12 @@ public class World
 
     public static class DataSerializerWorld implements IDataSerializer<World>
     {
+        private final GameRegistry registry;
         private final DataSerializerFieldMap mapSerializer;
 
         public DataSerializerWorld(GameRegistry registry)
         {
+            this.registry = registry;
             this.mapSerializer = new DataSerializerFieldMap(registry);
         }
 
@@ -107,7 +109,7 @@ public class World
                 mapRegistry.put(id, mapSerializer.deserialize(mapData));
             });
 
-            DataSerializerIngameEvent eventSerializer = new DataSerializerIngameEvent(mapRegistry);
+            DataSerializerIngameEvent eventSerializer = new DataSerializerIngameEvent(registry, mapRegistry);
 
             @SuppressWarnings("unchecked")
             Map<String, Map<String, Object>> eventMap = (Map<String, Map<String, Object>>) map.get("events");

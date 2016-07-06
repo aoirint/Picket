@@ -76,11 +76,9 @@ public class GameRegistry
 
     public static class DataSerializerGameRegistry implements IDataSerializer<GameRegistry>
     {
-        private final DataSerializerTile tileSerializer;
-
         public DataSerializerGameRegistry()
         {
-            this.tileSerializer = new DataSerializerTile();
+
         }
 
         @Override
@@ -105,7 +103,7 @@ public class GameRegistry
                 e.printStackTrace();
             }
 
-            textureRegistry.put("missing", new Texture("missing", new TextureLayer("missing", 0d)));
+            textureRegistry.put("missing", new Texture("missing", false, new TextureLayer("missing", 0d)));
             tileRegistry.put("null", new Tile("null", null));
 
 
@@ -137,6 +135,8 @@ public class GameRegistry
                     List<Map<String, Object>> layerDataList = (List<Map<String, Object>>) textureData.get("layers");
                     TextureLayer[] layers = new TextureLayer[layerDataList.size()];
 
+                    boolean enableDirection = (boolean) textureData.getOrDefault("enableDirection", false);
+
                     for (int i=0, len=layerDataList.size(); i<len; i++)
                     {
                         Map<String, Object> layerData = layerDataList.get(i);
@@ -147,7 +147,7 @@ public class GameRegistry
                         layers[i] = new TextureLayer(imageId, rotate);
                     }
 
-                    textureRegistry.put(id, new Texture(id, layers));
+                    textureRegistry.put(id, new Texture(id, enableDirection, layers));
                 });
             }
 
@@ -155,7 +155,7 @@ public class GameRegistry
             {
                 if (! textureRegistry.containsKey(id))
                 {
-                    textureRegistry.put(id, new Texture(id, new TextureLayer(id, 0d)));
+                    textureRegistry.put(id, new Texture(id, false, new TextureLayer(id, 0d)));
                 }
             });
 
@@ -164,15 +164,11 @@ public class GameRegistry
             Map<String, Map<String, Object>> tileMap = (Map<String, Map<String, Object>>) map.get("tiles");
             if (tileMap != null)
             {
+                DataSerializerTile tileSerializer = new DataSerializerTile(imageRegistry, textureRegistry);
+
                 tileMap.forEach((id, tileData) ->
                 {
                     Tile tile = tileSerializer.deserialize(tileData);
-                    String tileTexture = tile.texture();
-
-                    if (! textureRegistry.containsKey(tileTexture) && imageRegistry.containsKey(tileTexture))
-                    {
-                        textureRegistry.put(tileTexture, new Texture(tileTexture, new TextureLayer(tileTexture, 0d)));
-                    }
 
                     tileRegistry.put(id, tile);
 

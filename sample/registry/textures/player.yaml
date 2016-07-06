@@ -1,0 +1,5 @@
+_dummy: dummy
+
+enableDirection: true
+layers: 
+    - image: player

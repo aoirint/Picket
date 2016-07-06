@@ -1,6 +1,7 @@
 _dummy: dummy
 
 texture: player
+directionLock: false
 
 map: dbg1
 x: 0

@@ -14,14 +14,14 @@ public class GameRenderer implements IScreenPainter
     final Game game;
     RenderMap mapRenderer;
 
-    private RenderTexture textureRenderer;
+    private final RenderIngameEvent eventRenderer;
 
     public GameRenderer(Game game)
     {
         this.game = game;
         this.mapRenderer = new RenderMap(game);
 
-        textureRenderer = new RenderTexture(game);
+        eventRenderer = new RenderIngameEvent(game);
     }
 
     @Override
@@ -39,12 +39,7 @@ public class GameRenderer implements IScreenPainter
             FieldMap map = observer.map;
             mapRenderer.render(map, g);
 
-            if (observer.texture() != null)
-            {
-                g.translate(observer.x *RenderMap.TILE_SIZE, observer.y *RenderMap.TILE_SIZE);
-                textureRenderer.render(game.registry().texture(observer.texture()), g);
-                g.translate(-observer.x *RenderMap.TILE_SIZE, -observer.y *RenderMap.TILE_SIZE);
-            }
+            eventRenderer.render(observer, g);
 
         }
 
