@@ -4,9 +4,13 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 
+import com.kanomiya.picket.world.event.IngameEvent;
+
 public abstract class World
 {
     protected Map<String, FieldMap> mapRegistry;
+    protected Map<String, IngameEvent> globalEventRegistry;
+    protected Map<String, Object> worldRecords;
 
     public FieldMap getMap(String id)
     {
@@ -18,12 +22,30 @@ public abstract class World
         return mapRegistry;
     }
 
+    public IngameEvent globalEvent(String id)
+    {
+        return globalEventRegistry.get(id);
+    }
+
+    public Map<String, IngameEvent> globalEvents()
+    {
+        return globalEventRegistry;
+    }
+
+    public Map<String, Object> worldRecords()
+    {
+        return worldRecords;
+    }
+
 
     @Override
     public String toString()
     {
         final int maxLen = 10;
-        return "World [mapRegistry=" + (mapRegistry != null ? toString(mapRegistry.entrySet(), maxLen) : null) + "]";
+        return "World [mapRegistry=" + (mapRegistry != null ? toString(mapRegistry.entrySet(), maxLen) : null)
+                + ", globalEventRegistry="
+                + (globalEventRegistry != null ? toString(globalEventRegistry.entrySet(), maxLen) : null)
+                + ", worldRecords=" + (worldRecords != null ? toString(worldRecords.entrySet(), maxLen) : null) + "]";
     }
 
     private String toString(Collection<?> collection, int maxLen)

@@ -2,6 +2,7 @@ package com.kanomiya.picket.world;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Nullable;
 
@@ -16,8 +17,9 @@ public class FieldMap
     private FieldType[][] fieldTypes;
     private List<IngameEvent> events;
     private String background;
+    private Map<String, Object> mapRecords;
 
-    public FieldMap(String id, int width, int height, @Nullable String background, Tile[][] tiles, FieldType[][] fieldTypes)
+    public FieldMap(String id, int width, int height, @Nullable String background, Tile[][] tiles, FieldType[][] fieldTypes, Map<String, Object> mapRecords)
     {
         this.id = id;
         this.width = width;
@@ -25,6 +27,7 @@ public class FieldMap
         this.background = background;
         this.tiles = tiles;
         this.fieldTypes = fieldTypes;
+        this.mapRecords = mapRecords;
     }
 
     public String id()
@@ -50,14 +53,20 @@ public class FieldMap
 
     public Tile tileAt(int x, int y)
     {
-        return tiles[x][y];
+        if (0 <= x && x < tiles.length && 0 <= y && y < tiles[x].length) return tiles[x][y];
+        return null;
     }
 
     public FieldType fieldTypeAt(int x, int y)
     {
-        return fieldTypes[x][y];
+        if (0 <= x && x < fieldTypes.length && 0 <= y && y < fieldTypes[x].length) return fieldTypes[x][y];
+        return null;
     }
 
+    public Map<String, Object> mapRecords()
+    {
+        return mapRecords;
+    }
 
     @Override
     public String toString()

@@ -7,6 +7,7 @@ import com.kanomiya.picket.game.Game;
 import com.kanomiya.picket.render.screen.IScreenPainter;
 import com.kanomiya.picket.render.screen.Screen;
 import com.kanomiya.picket.world.FieldMap;
+import com.kanomiya.picket.world.event.IngameEvent;
 
 public class GameRenderer implements IScreenPainter
 {
@@ -31,14 +32,20 @@ public class GameRenderer implements IScreenPainter
         g.setColor(Color.BLACK);
         g.clearRect(0, 0, screen.getWidth(), screen.getHeight());
 
-        FieldMap map = game.player().map;
-        mapRenderer.render(map, g);
-
-        if (game.player().texture() != null)
+        if (game.observer() != null)
         {
-            g.translate(game.player().x *RenderMap.TILE_SIZE, game.player().y *RenderMap.TILE_SIZE);
-            textureRenderer.render(game.registry().texture(game.player().texture()), g);
-            g.translate(-game.player().x *RenderMap.TILE_SIZE, -game.player().y *RenderMap.TILE_SIZE);
+            IngameEvent observer = game.observer();
+
+            FieldMap map = observer.map;
+            mapRenderer.render(map, g);
+
+            if (observer.texture() != null)
+            {
+                g.translate(observer.x *RenderMap.TILE_SIZE, observer.y *RenderMap.TILE_SIZE);
+                textureRenderer.render(game.registry().texture(observer.texture()), g);
+                g.translate(-observer.x *RenderMap.TILE_SIZE, -observer.y *RenderMap.TILE_SIZE);
+            }
+
         }
 
     }

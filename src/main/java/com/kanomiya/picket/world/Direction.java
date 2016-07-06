@@ -17,6 +17,15 @@ public enum Direction
         this.yOffset = yOffset;
     }
 
+    public int offsetX()
+    {
+        return xOffset;
+    }
+    public int offsetY()
+    {
+        return yOffset;
+    }
+
 
     private static final Direction[] verticals = new Direction[] { NORTH, SOUTH };
     private static final Direction[] horizontals = new Direction[] { WEST, EAST };
@@ -62,6 +71,24 @@ public enum Direction
         }
 
         return this;
+    }
+
+    public static Direction fromOffset(int offsetX, int offsetY)
+    {
+        if (offsetX == 0 && offsetY == 0) return Direction.SOUTH;
+
+
+        if (offsetX == 0)
+        {
+            return offsetY < 0 ? NORTH : SOUTH;
+        } else if (offsetX < 0)
+        {
+            return WEST;
+        } else
+        {
+            return EAST;
+        }
+
     }
 
 }

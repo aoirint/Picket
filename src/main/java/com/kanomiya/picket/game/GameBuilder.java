@@ -21,8 +21,8 @@ import com.kanomiya.picket.render.Texture;
 import com.kanomiya.picket.render.TextureLayer;
 import com.kanomiya.picket.world.FieldMap;
 import com.kanomiya.picket.world.FieldType;
-import com.kanomiya.picket.world.Player;
 import com.kanomiya.picket.world.World;
+import com.kanomiya.picket.world.event.IngameEvent;
 import com.kanomiya.picket.world.tile.Tile;
 
 
@@ -56,25 +56,21 @@ public class GameBuilder
 
         App.logger.info("Loaded " + world.maps().size() + " maps");
 
+        @SuppressWarnings("unchecked")
+        Map<String, Object> gameData = yaml.loadAs(reader(file(path, "game.yaml")), Map.class);
 
         @SuppressWarnings("unchecked")
-        Map<String, Object> playerData = yaml.loadAs(reader(file(path, "player.yaml")), Map.class);
+        Map<String, Object> globalRecords = (Map<String, Object>) gameData.get("records");
+        if (globalRecords == null) globalRecords = Maps.newHashMap();
 
-        FieldMap map = world.getMap((String) playerData.get("map"));
-        int x = (int) playerData.get("x");
-        int y = (int) playerData.get("y");
-        String texture = (String) playerData.get("texture");
-
-        Player player = new Player(map, x, y, texture);
-
-        return new Game(info, world, registry, player);
+        return new Game(info, world, registry, globalRecords);
 
     }
 
 
     private GameInfo buildInfo() throws FileNotFoundException
     {
-        File infoFile = file(path, "game.yaml");
+        File infoFile = file(path, "info.yaml");
 
         @SuppressWarnings("unchecked")
         Map<String, Object> infoData = yaml.loadAs(reader(infoFile), Map.class);
@@ -257,6 +253,28 @@ public class GameBuilder
         {
             {
                 mapRegistry = Maps.newHashMap();
+                globalEventRegistry = Maps.newHashMap();
+
+
+                final File worldFile = file(worldDir, "world.yaml");
+
+                if (worldFile.exists())
+                {
+                    try
+                    {
+                        @SuppressWarnings("unchecked")
+                        Map<String, Object> worldData = yaml.loadAs(reader(worldFile), Map.class);
+
+                        @SuppressWarnings("unchecked")
+                        Map<String, Object> worldRecords = (Map<String, Object>) worldData.get("records");
+                        this.worldRecords = worldRecords != null ? worldRecords : Maps.newHashMap();
+
+                    } catch (FileNotFoundException e)
+                    {
+                        e.printStackTrace();
+                    }
+                } else worldRecords = Maps.newHashMap();
+
 
                 try
                 {
@@ -315,7 +333,7 @@ public class GameBuilder
                                     for (int x=0; x<width; x++)
                                     {
                                         String fieldTypeId = x < realW && line != null ? line.get(x) : null;
-                                        FieldType fieldType = FieldType.NORMAL;
+                                        FieldType fieldType = FieldType.BLOCK;
 
                                         if (fieldTypeId != null)
                                         {
@@ -345,7 +363,11 @@ public class GameBuilder
                                 }
 
 
-                                mapRegistry.put(id, new FieldMap(id, width, height, background, tiles, fieldTypes));
+                                @SuppressWarnings("unchecked")
+                                Map<String, Object> mapRecords = (Map<String, Object>) mapData.get("records");
+                                if (mapRecords == null) mapRecords = Maps.newHashMap();
+
+                                mapRegistry.put(id, new FieldMap(id, width, height, background, tiles, fieldTypes, mapRecords));
 
                             } catch (FileNotFoundException e)
                             {
@@ -358,6 +380,47 @@ public class GameBuilder
                 {
                     e.printStackTrace();
                 }
+
+                try
+                {
+                    final File eventDir = file(worldDir, "events");
+
+                    if (eventDir.exists())
+                    {
+                        walk(path(eventDir), 1).filter(yamlPredicate).forEach((path) ->
+                        {
+                            String id = splitExtension(name(path));
+                            File file = file(path);
+
+                            try
+                            {
+                                @SuppressWarnings("unchecked")
+                                Map<String, Object> eventData = yaml.loadAs(reader(file), Map.class);
+
+                                FieldMap map = mapRegistry.get(eventData.get("map"));
+                                int x = (int) eventData.get("x");
+                                int y = (int) eventData.get("y");
+                                String texture = (String) eventData.getOrDefault("texture", null);
+                                String script = (String) eventData.getOrDefault("script", null);
+
+                                @SuppressWarnings("unchecked")
+                                Map<String, Object> eventRecords = (Map<String, Object>) eventData.get("records");
+                                if (eventRecords == null) eventRecords = Maps.newHashMap();
+
+                                globalEventRegistry.put(id, new IngameEvent(map, x, y, texture, script, eventRecords));
+
+                            } catch (FileNotFoundException e)
+                            {
+                                e.printStackTrace();
+                            }
+                        });
+                    }
+
+                } catch (IOException e)
+                {
+                    e.printStackTrace();
+                }
+
             }
         };
     }

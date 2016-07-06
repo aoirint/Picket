@@ -1,26 +1,35 @@
 package com.kanomiya.picket.game;
 
+import java.util.Map;
+
 import com.kanomiya.picket.control.GameController;
 import com.kanomiya.picket.render.GameRenderer;
-import com.kanomiya.picket.world.Player;
 import com.kanomiya.picket.world.World;
+import com.kanomiya.picket.world.event.IngameEvent;
 
 public class Game
 {
     GameInfo info;
     World world;
     GameRegistry registry;
-    Player player;
+
+    Map<String, Object> globalRecords;
+
+    IngameEvent observer;
+    IngameEvent actor;
 
     GameRenderer renderer;
     GameController controller;
 
-    public Game(GameInfo info, World world, GameRegistry registry, Player player)
+    public Game(GameInfo info, World world, GameRegistry registry, Map<String, Object> globalRecords)
     {
         this.info = info;
         this.world = world;
         this.registry = registry;
-        this.player = player;
+        this.globalRecords = globalRecords;
+
+        this.observer = globalRecords.containsKey("observer") ? world.globalEvent((String) globalRecords.get("observer")) : null;
+        this.actor = globalRecords.containsKey("actor") ? world.globalEvent((String) globalRecords.get("actor")) : null;
 
         this.renderer = new GameRenderer(this);
         this.controller = new GameController(this);
@@ -41,9 +50,19 @@ public class Game
         return registry;
     }
 
-    public Player player()
+    public IngameEvent observer()
     {
-        return player;
+        return observer;
+    }
+
+    public IngameEvent actor()
+    {
+        return actor;
+    }
+
+    public Map<String, Object> globalRecords()
+    {
+        return globalRecords;
     }
 
     public GameRenderer renderer()

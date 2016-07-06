@@ -10,6 +10,8 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 
 import com.kanomiya.picket.game.Game;
+import com.kanomiya.picket.world.Direction;
+import com.kanomiya.picket.world.event.IngameEvent;
 
 public class GameController implements KeyListener, MouseListener, MouseMotionListener
 {
@@ -32,18 +34,20 @@ public class GameController implements KeyListener, MouseListener, MouseMotionLi
     @Override
     public void keyPressed(KeyEvent e)
     {
-        if (e.getKeyCode() == VK_UP)
-            game.player().y --;
-        else if (e.getKeyCode() == VK_DOWN)
-            game.player().y ++;
-        else if (e.getKeyCode() == VK_LEFT)
-            game.player().x --;
-        else if (e.getKeyCode() == VK_RIGHT)
-            game.player().x ++;
-        else if (e.getKeyCode() == VK_CLEAR)
+        if (game.actor() != null)
         {
-            game.player().x = 0;
-            game.player().y = 0;
+            IngameEvent actor = game.actor();
+
+            if (e.getKeyCode() == VK_UP) actor.move(Direction.NORTH);
+            else if (e.getKeyCode() == VK_DOWN) actor.move(Direction.SOUTH);
+            else if (e.getKeyCode() == VK_LEFT) actor.move(Direction.WEST);
+            else if (e.getKeyCode() == VK_RIGHT) actor.move(Direction.EAST);
+            else if (e.getKeyCode() == VK_CLEAR)
+            {
+                actor.x = 0;
+                actor.y = 0;
+            }
+
         }
 
 
