@@ -2,6 +2,9 @@ package com.kanomiya.picket.game;
 
 import java.util.Map;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 import com.kanomiya.picket.control.GameController;
 import com.kanomiya.picket.render.GameRenderer;
 import com.kanomiya.picket.world.IngameEvent;
@@ -9,17 +12,26 @@ import com.kanomiya.picket.world.World;
 
 public class Game
 {
-    GameInfo info;
-    World world;
-    GameRegistry registry;
+    @Nonnull
+    public final GameInfo info;
+    @Nonnull
+    public final GameRegistry registry;
+    @Nonnull
+    public final GameRenderer renderer;
+    @Nonnull
+    public final GameController controller;
 
-    Map<String, Object> globalRecords;
 
-    IngameEvent observer;
-    IngameEvent actor;
+    public World world;
 
-    GameRenderer renderer;
-    GameController controller;
+    public Map<String, Object> globalRecords;
+
+    @Nullable
+    public IngameEvent observer;
+
+    @Nullable
+    public IngameEvent actor;
+
 
     public Game(GameInfo info, World world, GameRegistry registry, Map<String, Object> globalRecords)
     {
@@ -35,44 +47,5 @@ public class Game
         this.controller = new GameController(this);
     }
 
-    public GameInfo info()
-    {
-        return info;
-    }
-
-    public World world()
-    {
-        return world;
-    }
-
-    public GameRegistry registry()
-    {
-        return registry;
-    }
-
-    public IngameEvent observer()
-    {
-        return observer;
-    }
-
-    public IngameEvent actor()
-    {
-        return actor;
-    }
-
-    public Map<String, Object> globalRecords()
-    {
-        return globalRecords;
-    }
-
-    public GameRenderer renderer()
-    {
-        return renderer;
-    }
-
-    public GameController controller()
-    {
-        return controller;
-    }
 
 }

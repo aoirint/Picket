@@ -4,6 +4,8 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 
+import javax.annotation.Nonnull;
+
 import com.google.common.collect.Maps;
 import com.kanomiya.picket.game.GameRegistry;
 import com.kanomiya.picket.util.IDataSerializer;
@@ -12,40 +14,32 @@ import com.kanomiya.picket.world.IngameEvent.DataSerializerIngameEvent;
 
 public class World
 {
-    protected Map<String, FieldMap> mapRegistry;
-    protected Map<String, IngameEvent> worldEventRegistry;
-    protected Map<String, Object> worldRecords;
+    @Nonnull
+    public final Map<String, FieldMap> mapRegistry;
+    @Nonnull
+    public final Map<String, IngameEvent> worldEventRegistry;
+    @Nonnull
+    public final Map<String, Object> worldRecords;
+
+    public boolean enableTick;
 
     public World(Map<String, FieldMap> mapRegistry, Map<String, IngameEvent> worldEventRegistry, Map<String, Object> worldRecords)
     {
         this.mapRegistry = mapRegistry;
         this.worldEventRegistry = worldEventRegistry;
         this.worldRecords = worldRecords;
+
+        enableTick = true;
     }
 
-    public FieldMap getMap(String id)
+    public FieldMap map(String id)
     {
         return mapRegistry.get(id);
-    }
-
-    public Map<String, FieldMap> maps()
-    {
-        return mapRegistry;
     }
 
     public IngameEvent worldEvent(String id)
     {
         return worldEventRegistry.get(id);
-    }
-
-    public Map<String, IngameEvent> worldEvents()
-    {
-        return worldEventRegistry;
-    }
-
-    public Map<String, Object> worldRecords()
-    {
-        return worldRecords;
     }
 
 

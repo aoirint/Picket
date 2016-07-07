@@ -19,15 +19,11 @@ public class RenderMap extends RenderBase<FieldMap>
     public static final int HEIGHT = TILE_ROW * TILE_SIZE;
 
 
-    private final TextureRenderInfo renderInfo;
     private int cameraX, cameraY;
 
     public RenderMap(Game game)
     {
         super(game);
-        renderInfo = new TextureRenderInfo();
-
-        renderInfo.enableSourceOffset = true;
 
     }
 
@@ -63,14 +59,17 @@ public class RenderMap extends RenderBase<FieldMap>
     @Override
     public void render(FieldMap map, Graphics2D g)
     {
-        renderInfo.sourceOffsetX = cameraX *TILE_SIZE;
-        renderInfo.sourceOffsetY = cameraY *TILE_SIZE;
 
-        if (map.background() != null)
+        if (map.background != null)
         {
+            int sx = -cameraX *TILE_SIZE;
+            int sy = -cameraY *TILE_SIZE;
+
+            g.translate(sx, sy);
             g.setClip(0, 0, WIDTH, HEIGHT);
-            renderTexture(game.registry().texture(map.background()), renderInfo, g);
+            renderTexture(map.background, map.backgroundRenderInfo, g);
             g.setClip(null);
+            g.translate(-sx, -sy);
         }
 
         g.setColor(Color.GRAY);
@@ -95,12 +94,10 @@ public class RenderMap extends RenderBase<FieldMap>
 
                 Tile tile = map.tileAt(cameraX +i, cameraY +j);
 
-                if (tile.texture() != null)
+                if (tile.texture != null)
                 {
-                    Texture texture = tile.texture();
-
                     g.translate(i *TILE_SIZE, j *TILE_SIZE);
-                    renderTexture(texture, null, g);
+                    renderTexture(tile.texture, tile.renderInfo, g);
                     g.translate(-i *TILE_SIZE, -j *TILE_SIZE);
                 }
             }

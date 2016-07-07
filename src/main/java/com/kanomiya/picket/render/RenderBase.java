@@ -2,10 +2,14 @@ package com.kanomiya.picket.render;
 
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
+import java.util.List;
 
 import javax.annotation.Nullable;
 
 import com.kanomiya.picket.game.Game;
+import com.kanomiya.picket.render.texture.Texture;
+import com.kanomiya.picket.render.texture.TextureLayer;
+import com.kanomiya.picket.render.texture.TextureRenderInfo;
 
 public abstract class RenderBase<T>
 {
@@ -21,60 +25,83 @@ public abstract class RenderBase<T>
 
     public void renderTexture(Texture texture, @Nullable TextureRenderInfo info, Graphics2D g)
     {
-        TextureLayer[] layers = texture.layers();
+        String variantId = "normal";
 
-        int sx = 0;
-        int sy = 0;
+        int basesx = 0;
+        int basesy = 0;
 
-        int dx = 0;
-        int dy = 0;
+        int basedx = 0;
+        int basedy = 0;
 
-        int width = -1;
-        int height = -1;
+        int basewidth = -1;
+        int baseheight = -1;
 
         if (info != null)
         {
             if (info.enableSourceOffset)
             {
-                sx = info.sourceOffsetX;
-                sy = info.sourceOffsetY;
+                basesx = info.sourceOffsetX;
+                basesy = info.sourceOffsetY;
             }
 
             if (info.enableDestOffset)
             {
-                dx = info.destOffsetX;
-                dy = info.destOffsetY;
+                basedx = info.destOffsetX;
+                basedy = info.destOffsetY;
             }
 
             if (info.enableSize)
             {
-                width = info.width;
-                height = info.height;
+                basewidth = info.width;
+                baseheight = info.height;
             }
 
-        }
-
-
-        for (int i=0; i<layers.length; i++)
-        {
-            TextureLayer layer = layers[i];
-
-            if (layer.imageId != null)
+            if (info.enableVariantId)
             {
-                BufferedImage image = game.registry().image(layer.imageId);
+                variantId = info.variantId;
+            }
 
-                double theta = layer.rotate/180 *Math.PI;
-                int w = width == -1 ? image.getWidth() : width;
-                int h = height == -1 ? image.getHeight() : height;
-
-                g.rotate(theta, w/2, h/2);
-
-                g.drawImage(image, dx, dy, dx +w, dy +h, sx, sy, sx +w, sy +h, null);
-
-                g.rotate(-theta, w/2, h/2);
-
+            if (texture.animation != null)
+            {
+                variantId = texture.animation.frames.get(info.animationFrameId).variantId;
             }
         }
+
+        List<TextureLayer> layers = texture.variants.get(variantId);
+        if (layers != null)
+        {
+            for (TextureLayer layer: layers)
+            {
+
+                if (layer.imageId != null)
+                {
+                    BufferedImage image = game.registry.image(layer.imageId);
+
+                    int sx = basesx;
+                    int sy = basesy;
+
+                    if (layer.sourcePos != null)
+                    {
+                        sx += layer.sourcePos.x;
+                        sy += layer.sourcePos.y;
+                    }
+
+                    int swidth = basewidth == -1 ? layer.sourceSize != null ? layer.sourceSize.width : image.getWidth() : basewidth;
+                    int sheight = baseheight == -1 ? layer.sourceSize != null ? layer.sourceSize.height : image.getHeight() : baseheight;
+
+                    double theta = layer.rotate/180 *Math.PI;
+
+                    g.rotate(theta, swidth/2, sheight/2);
+
+                    g.drawImage(image, basedx, basedy, basedx +swidth, basedy +sheight, sx, sy, sx +swidth, sy +sheight, null);
+
+                    g.rotate(-theta, swidth/2, sheight/2);
+
+                }
+            }
+
+        }
+
     }
 
 

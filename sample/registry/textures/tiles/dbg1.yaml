@@ -1,0 +1,16 @@
+_dummy: dummy
+
+animation:
+    - variant: normal
+      delay: 10
+    - variant: rotated
+      delay: 10
+
+variants:
+    normal:
+        - image: tiles/dirt
+        - image: missing
+    rotated:
+        - image: tiles/dirt
+        - image: missing
+          rotate: 45.0

@@ -34,9 +34,9 @@ public class GameController implements KeyListener, MouseListener, MouseMotionLi
     @Override
     public void keyPressed(KeyEvent e)
     {
-        if (game.actor() != null)
+        if (game.actor != null)
         {
-            IngameEvent actor = game.actor();
+            IngameEvent actor = game.actor;
 
             if (e.getKeyCode() == VK_UP) actor.move(Direction.NORTH);
             else if (e.getKeyCode() == VK_DOWN) actor.move(Direction.SOUTH);

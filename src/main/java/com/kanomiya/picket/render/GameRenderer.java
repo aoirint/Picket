@@ -32,9 +32,9 @@ public class GameRenderer implements IScreenPainter
         g.setColor(Color.BLACK);
         g.clearRect(0, 0, screen.getWidth(), screen.getHeight());
 
-        if (game.observer() != null)
+        if (game.observer != null)
         {
-            IngameEvent observer = game.observer();
+            IngameEvent observer = game.observer;
 
             FieldMap map = observer.map;
 

@@ -9,24 +9,32 @@ import javax.annotation.Nullable;
 
 import com.google.common.collect.Maps;
 import com.kanomiya.picket.game.GameRegistry;
+import com.kanomiya.picket.render.texture.Texture;
+import com.kanomiya.picket.render.texture.TextureRenderInfo;
 import com.kanomiya.picket.util.IDataSerializer;
 
 public class FieldMap
 {
-    private final String id;
+    public final String id;
     private int width, height;
     private Tile[][] tiles;
     private FieldType[][] fieldTypes;
-    private List<IngameEvent> events;
-    private String background;
+    private List<IngameEvent> events; // TODO: 未実装
+
+    @Nullable
+    public final Texture background;
+    public final TextureRenderInfo backgroundRenderInfo;
+
     private Map<String, Object> mapRecords;
 
-    public FieldMap(String id, int width, int height, @Nullable String background, Tile[][] tiles, FieldType[][] fieldTypes, Map<String, Object> mapRecords)
+    public FieldMap(String id, int width, int height, @Nullable Texture background, Tile[][] tiles, FieldType[][] fieldTypes, Map<String, Object> mapRecords)
     {
         this.id = id;
         this.width = width;
         this.height = height;
         this.background = background;
+        this.backgroundRenderInfo = new TextureRenderInfo();
+
         this.tiles = tiles;
         this.fieldTypes = fieldTypes;
         this.mapRecords = mapRecords;
@@ -45,12 +53,6 @@ public class FieldMap
     public int height()
     {
         return height;
-    }
-
-    @Nullable
-    public String background()
-    {
-        return background;
     }
 
     public Tile tileAt(int x, int y)
@@ -110,7 +112,7 @@ public class FieldMap
             int width = (int) map.get("width");
             int height = (int) map.get("height");
 
-            String background = (String) map.getOrDefault("background", null);
+            Texture background = registry.texture((String) map.getOrDefault("background", null));
 
             @SuppressWarnings("unchecked")
             List<List<String>> tileData = (List<List<String>>) map.get("tiles");

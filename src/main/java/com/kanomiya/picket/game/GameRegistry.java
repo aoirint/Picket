@@ -1,5 +1,7 @@
 package com.kanomiya.picket.game;
 
+import java.awt.Dimension;
+import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -8,22 +10,28 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Nonnull;
 import javax.imageio.ImageIO;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.kanomiya.picket.render.Texture;
-import com.kanomiya.picket.render.TextureLayer;
+import com.kanomiya.picket.render.texture.Texture;
+import com.kanomiya.picket.render.texture.TextureLayer;
+import com.kanomiya.picket.render.texture.animation.AnimationFrame;
 import com.kanomiya.picket.util.IDataSerializer;
 import com.kanomiya.picket.world.Tile;
 import com.kanomiya.picket.world.Tile.DataSerializerTile;
 
 public class GameRegistry
 {
+    @Nonnull
     public final Map<String, BufferedImage> imageRegistry;
+    @Nonnull
     public final Map<String, Texture> textureRegistry;
+    @Nonnull
     public final Map<String, Tile> tileRegistry;
 
-    public GameRegistry(Map<String, BufferedImage> imageRegistry, Map<String, Texture> textureRegistry, Map<String, Tile> tileRegistry)
+    public GameRegistry(@Nonnull Map<String, BufferedImage> imageRegistry, @Nonnull Map<String, Texture> textureRegistry, @Nonnull Map<String, Tile> tileRegistry)
     {
         this.imageRegistry = imageRegistry;
         this.textureRegistry = textureRegistry;
@@ -103,7 +111,7 @@ public class GameRegistry
                 e.printStackTrace();
             }
 
-            textureRegistry.put("missing", new Texture("missing", false, new TextureLayer("missing", 0d)));
+            textureRegistry.put("missing", new Texture("missing", false, new TextureLayer("missing", null, null, 0d)));
             tileRegistry.put("null", new Tile("null", null));
 
 
@@ -132,22 +140,67 @@ public class GameRegistry
                 textureMap.forEach((id, textureData) ->
                 {
                     @SuppressWarnings("unchecked")
-                    List<Map<String, Object>> layerDataList = (List<Map<String, Object>>) textureData.get("layers");
-                    TextureLayer[] layers = new TextureLayer[layerDataList.size()];
+                    Map<String, List<Map<String, Object>>> variantDataList = (Map<String, List<Map<String, Object>>>) textureData.get("variants");
+                    Map<String, List<TextureLayer>> variants = Maps.newHashMap();
 
                     boolean enableDirection = (boolean) textureData.getOrDefault("enableDirection", false);
 
-                    for (int i=0, len=layerDataList.size(); i<len; i++)
+                    variantDataList.forEach((variantId, variantData) ->
                     {
-                        Map<String, Object> layerData = layerDataList.get(i);
+                        List<TextureLayer> layers = Lists.newArrayList();
 
-                        String imageId = (String) layerData.get("image");
-                        double rotate = (double) layerData.getOrDefault("rotate", 0d);
+                        variantData.forEach(layerData ->
+                        {
+                            String imageId = (String) layerData.get("image");
+                            Point sourcePos = null;
+                            if (layerData.containsKey("sourceX") && layerData.containsKey("sourceY"))
+                            {
+                                sourcePos = new Point((int) layerData.get("sourceX"), (int) layerData.get("sourceY"));
+                            } else if (layerData.containsKey("sourceX"))
+                            {
+                                sourcePos = new Point((int) layerData.get("sourceX"), 0);
+                            } else if (layerData.containsKey("sourceY"))
+                            {
+                                sourcePos = new Point(0, (int) layerData.get("sourceY"));
+                            }
 
-                        layers[i] = new TextureLayer(imageId, rotate);
-                    }
+                            Dimension sourceSize = null;
+                            if (layerData.containsKey("sourceSize"))
+                            {
+                                sourceSize = new Dimension((int) layerData.get("sourceSize"), (int) layerData.get("sourceSize"));
+                            } else if (layerData.containsKey("sourceWidth") && layerData.containsKey("sourceHeight"))
+                            {
+                                sourceSize = new Dimension((int) layerData.get("sourceWidth"), (int) layerData.get("sourceHeight"));
+                            }
 
-                    textureRegistry.put(id, new Texture(id, enableDirection, layers));
+                            double rotate = (double) layerData.getOrDefault("rotate", 0d);
+
+                            layers.add(new TextureLayer(imageId, sourcePos, sourceSize, rotate));
+                        });
+
+                        variants.put(variantId, layers);
+                    });
+
+                    List<AnimationFrame> animation;
+                    if (textureData.containsKey("animation"))
+                    {
+                        @SuppressWarnings("unchecked")
+                        List<Map<String, Object>> animationDataList = (List<Map<String, Object>>) textureData.get("animation");
+
+                        animation = Lists.newArrayList();
+
+                        animationDataList.forEach(animationData ->
+                        {
+                            String variantId = (String) animationData.get("variant");
+                            int delay = (int) animationData.get("delay");
+
+                            animation.add(new AnimationFrame(variantId, delay));
+                        });
+
+                    } else animation = null;
+
+
+                    textureRegistry.put(id, new Texture(id, enableDirection, variants, animation));
                 });
             }
 
@@ -155,7 +208,7 @@ public class GameRegistry
             {
                 if (! textureRegistry.containsKey(id))
                 {
-                    textureRegistry.put(id, new Texture(id, false, new TextureLayer(id, 0d)));
+                    textureRegistry.put(id, new Texture(id, false, new TextureLayer(id, null, null, 0d)));
                 }
             });
 

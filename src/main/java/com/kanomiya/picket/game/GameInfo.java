@@ -2,7 +2,7 @@ package com.kanomiya.picket.game;
 
 public class GameInfo
 {
-    private final String
+    public final String
         name,
         description,
         version,
@@ -16,32 +16,6 @@ public class GameInfo
         this.version = version;
         this.author = author;
         this.url = url;
-    }
-
-
-    public String name()
-    {
-        return name;
-    }
-
-    public String description()
-    {
-        return description;
-    }
-
-    public String version()
-    {
-        return version;
-    }
-
-    public String author()
-    {
-        return author;
-    }
-
-    public String url()
-    {
-        return url;
     }
 
 

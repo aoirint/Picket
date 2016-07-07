@@ -7,23 +7,25 @@ import javax.annotation.Nullable;
 
 import com.google.common.collect.Maps;
 import com.kanomiya.picket.game.GameRegistry;
-import com.kanomiya.picket.render.Texture;
-import com.kanomiya.picket.render.TextureRenderInfo;
+import com.kanomiya.picket.render.texture.Texture;
+import com.kanomiya.picket.render.texture.TextureRenderInfo;
 import com.kanomiya.picket.util.IDataSerializer;
 
 public class IngameEvent
 {
-    private final String id;
+    public final String id;
     public FieldMap map;
     public int x, y;
     private Direction direction;
     public boolean directionLock;
 
-    private Texture texture;
+    @Nullable
+    public Texture texture;
     public final TextureRenderInfo renderInfo;
 
-    private String script;
-    private Map<String, Object> eventRecords;
+    @Nullable
+    public String script;
+    public final Map<String, Object> eventRecords;
 
     public IngameEvent(String id, FieldMap map, int x, int y, Direction direction, boolean directionLock, @Nullable Texture texture, @Nullable String script, Map<String, Object> eventRecords)
     {
@@ -34,6 +36,7 @@ public class IngameEvent
 
         this.texture = texture;
         this.renderInfo = new TextureRenderInfo();
+
         this.script = script;
         this.eventRecords = eventRecords;
 
@@ -42,26 +45,11 @@ public class IngameEvent
     }
 
 
-    public String id()
-    {
-        return id;
-    }
 
-    @Nullable
-    public Texture texture()
+    public void pos(int x, int y)
     {
-        return texture;
-    }
-
-    @Nullable
-    public String script()
-    {
-        return script;
-    }
-
-    public Map<String, Object> eventRecords()
-    {
-        return eventRecords;
+        this.x = x;
+        this.y = y;
     }
 
     public Direction direction()
@@ -75,28 +63,17 @@ public class IngameEvent
 
         if (texture.enableDirection)
         {
-            if (! renderInfo.enableSourceOffset)
-            {
-                renderInfo.enableSourceOffset = true;
-                renderInfo.enableSize = true;
-
-                renderInfo.width = 32;
-                renderInfo.height = 32;
-            }
+            renderInfo.enableVariantId = true;
 
             switch (direction)
             {
-            case SOUTH:
-                renderInfo.sourceOffsetY = 0;
+            case SOUTH: renderInfo.variantId = "south";
                 break;
-            case NORTH:
-                renderInfo.sourceOffsetY = 96;
+            case NORTH: renderInfo.variantId = "north";
                 break;
-            case WEST:
-                renderInfo.sourceOffsetY = 32;
+            case WEST:  renderInfo.variantId = "west";
                 break;
-            case EAST:
-                renderInfo.sourceOffsetY = 64;
+            case EAST:  renderInfo.variantId = "east";
                 break;
             }
         }
@@ -158,6 +135,8 @@ public class IngameEvent
         @Override
         public Map<String, Object> serialize(IngameEvent event)
         {
+            Map<String, Object> map = Maps.newHashMap();
+
 
             return null;
         }

@@ -8,6 +8,8 @@ import com.kanomiya.picket.game.Game;
 import com.kanomiya.picket.game.GameBuilder;
 import com.kanomiya.picket.render.screen.Screen;
 import com.kanomiya.picket.window.GameFrame;
+import com.kanomiya.picket.world.FieldMap;
+import com.kanomiya.picket.world.Tile;
 
 public class App
 {
@@ -27,20 +29,70 @@ public class App
             Game game = builder.build();
 
             logger.info("### Finish Loading Game");
-            logger.info(game.info());
-            logger.info(game.registry());
-            logger.info(game.world());
+            logger.info(game.info);
+            logger.info(game.registry);
+            logger.info(game.world);
 
             Screen screen = new Screen(WIDTH, HEIGHT);
-            GameFrame frame = new GameFrame(game.info().name(), screen);
+            GameFrame frame = new GameFrame(game.info.name, screen);
 
-            screen.addPainter(game.renderer());
+            screen.addPainter(game.renderer);
 
-            frame.addKeyListener(game.controller());
-            frame.addMouseListener(game.controller());
-            frame.addMouseMotionListener(game.controller());
+            frame.addKeyListener(game.controller);
+            frame.addMouseListener(game.controller);
+            frame.addMouseMotionListener(game.controller);
 
             frame.setVisible(true);
+
+            Thread ticker = new Thread("Ticker")
+            {
+                @Override
+                public void run()
+                {
+                    while (true)
+                    {
+                        if (game.world.enableTick)
+                        {
+                            game.world.worldEventRegistry.values().forEach((event) ->
+                            {
+                                if (event.texture != null && event.texture.animation != null)
+                                {
+                                    event.renderInfo.nextTick(event.texture.animation);
+                                }
+                            });
+
+                            if (game.observer != null)
+                            {
+                                FieldMap map = game.observer.map;
+
+                                for (int x=0; x<map.width(); x++)
+                                {
+                                    for (int y=0; y<map.height(); y++)
+                                    {
+                                        Tile tile = map.tileAt(x, y);
+                                        if (tile != null && tile.texture != null && tile.texture.animation != null)
+                                        {
+                                            tile.renderInfo.nextTick(tile.texture.animation);
+                                        }
+                                    }
+                                }
+
+                            }
+                        }
+
+
+                        try
+                        {
+                            sleep(100);
+                        } catch (InterruptedException e)
+                        {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            };
+
+            ticker.start();
 
             Thread thread = new Thread("Repainter")
             {

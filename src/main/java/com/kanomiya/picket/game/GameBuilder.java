@@ -49,7 +49,7 @@ public class GameBuilder
         World world = new DataSerializerWorld(registry).deserialize(worldMap);
 
 
-        App.logger.info("Loaded " + world.maps().size() + " maps");
+        App.logger.info("Loaded " + world.mapRegistry.size() + " maps");
 
         @SuppressWarnings("unchecked")
         Map<String, Object> gameData = yaml.loadAs(reader(file(path, "game.yaml")), Map.class);
