@@ -11,8 +11,8 @@ import com.kanomiya.picket.render.screen.Screen;
 
 public class GameFrame extends Frame implements IScreenListener
 {
-    Screen screen;
-    Insets insets;
+    private Screen screen;
+    private Insets insets;
 
     public GameFrame(String title, Screen screen)
     {

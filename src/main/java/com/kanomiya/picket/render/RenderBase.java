@@ -13,7 +13,7 @@ import com.kanomiya.picket.render.texture.TextureRenderInfo;
 
 public abstract class RenderBase<T>
 {
-    Game game;
+    final Game game;
 
     public RenderBase(Game game)
     {

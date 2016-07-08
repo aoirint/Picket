@@ -21,8 +21,8 @@ import com.kanomiya.picket.world.World.DataSerializerWorld;
 
 public class GameBuilder
 {
-    Yaml yaml;
-    String path;
+    private final Yaml yaml;
+    private final String path;
 
     private static final Predicate<Path> commentPredicate = (path) -> path.toString().startsWith("_");
     private static final Predicate<Path> yamlPredicate = (path) -> ! commentPredicate.test(path) && path.toString().endsWith(".yaml");

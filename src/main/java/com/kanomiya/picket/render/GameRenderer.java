@@ -11,8 +11,8 @@ import com.kanomiya.picket.world.IngameEvent;
 
 public class GameRenderer implements IScreenPainter
 {
-    final Game game;
-    RenderMap mapRenderer;
+    private final Game game;
+    private final RenderMap mapRenderer;
 
     private final RenderIngameEvent eventRenderer;
 

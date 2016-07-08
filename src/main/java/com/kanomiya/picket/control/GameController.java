@@ -15,7 +15,7 @@ import com.kanomiya.picket.world.IngameEvent;
 
 public class GameController implements KeyListener, MouseListener, MouseMotionListener
 {
-    final Game game;
+    private final Game game;
 
     public GameController(Game game)
     {

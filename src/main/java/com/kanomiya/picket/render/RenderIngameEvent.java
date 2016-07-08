@@ -12,12 +12,12 @@ public class RenderIngameEvent extends RenderBase<IngameEvent>
     public RenderIngameEvent(Game game)
     {
         super(game);
+
     }
 
     @Override
     public void render(IngameEvent event, Graphics2D g)
     {
-
         Texture texture = event.texture;
 
         if (texture != null)

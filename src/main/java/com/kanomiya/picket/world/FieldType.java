@@ -12,7 +12,7 @@ public class FieldType
     public static final FieldType VERTICAL_BLOCK = new FieldType(false, true);
 
 
-    private List<Direction> passableFrom;
+    private final List<Direction> passableFrom;
 
     FieldType(boolean all)
     {
