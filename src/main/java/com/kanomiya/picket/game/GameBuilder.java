@@ -13,6 +13,7 @@ import org.yaml.snakeyaml.Yaml;
 
 import com.google.common.collect.Maps;
 import com.kanomiya.picket.App;
+import com.kanomiya.picket.game.GameInfo.DataSerializerGameInfo;
 import com.kanomiya.picket.game.GameRegistry.DataSerializerGameRegistry;
 import com.kanomiya.picket.world.World;
 import com.kanomiya.picket.world.World.DataSerializerWorld;
@@ -35,27 +36,29 @@ public class GameBuilder
         this.path = path;
     }
 
+
     public Game build() throws FileNotFoundException
     {
-        GameInfo info = buildInfo();
-        Map<String, Object> registryMap = buildRegistryData();
-        GameRegistry registry = new DataSerializerGameRegistry().deserialize(registryMap);
+        Map<String, Object> gameMap = buildGameData();
+
+        @SuppressWarnings("unchecked")
+        GameInfo info = new DataSerializerGameInfo().deserialize((Map<String, Object>) gameMap.get("info"));
+        @SuppressWarnings("unchecked")
+        GameRegistry registry = new DataSerializerGameRegistry().deserialize((Map<String, Object>) gameMap.get("registry"));
 
         App.logger.info("Loaded " + registry.imageRegistry.size() + " images");
         App.logger.info("Loaded " + registry.textureRegistry.size() + " textures");
         App.logger.info("Loaded " + registry.tileRegistry.size() + " tiles");
 
-        Map<String, Object> worldMap = buildWorldData();
-        World world = new DataSerializerWorld(registry).deserialize(worldMap);
+        @SuppressWarnings("unchecked")
+        World world = new DataSerializerWorld(registry).deserialize((Map<String, Object>) gameMap.get("world"));
 
 
         App.logger.info("Loaded " + world.mapRegistry.size() + " maps");
 
-        @SuppressWarnings("unchecked")
-        Map<String, Object> gameData = yaml.loadAs(reader(file(path, "game.yaml")), Map.class);
 
         @SuppressWarnings("unchecked")
-        Map<String, Object> globalRecords = (Map<String, Object>) gameData.get("records");
+        Map<String, Object> globalRecords = (Map<String, Object>) gameMap.get("records");
         if (globalRecords == null) globalRecords = Maps.newHashMap();
 
         return new Game(info, world, registry, globalRecords);
@@ -63,20 +66,47 @@ public class GameBuilder
     }
 
 
-    private GameInfo buildInfo() throws FileNotFoundException
+
+
+    private static <K1, K2, V2> void putIfAbsentElseMerge(Map<K1, Object> map, K1 key, Map<K2, V2> newValue)
+    {
+        if (map.containsKey(key))
+        {
+            if (map.get(key) instanceof Map)
+            {
+                @SuppressWarnings("unchecked")
+                Map<K2, V2> oldValue = (Map<K2, V2>) map.get(key);
+
+                oldValue.putAll(newValue);
+
+            } else throw new IllegalArgumentException("Map#" + key + " should be a Map or null");
+        } else map.put(key, newValue);
+    }
+
+
+
+
+
+    private Map<String, Object> buildGameData() throws FileNotFoundException
+    {
+        @SuppressWarnings("unchecked")
+        Map<String, Object> gameMap = yaml.loadAs(reader(file(path, "game.yaml")), Map.class);
+
+        putIfAbsentElseMerge(gameMap, "info", buildGameInfoData());
+        putIfAbsentElseMerge(gameMap, "registry", buildRegistryData());
+        putIfAbsentElseMerge(gameMap, "world", buildWorldData());
+
+        return gameMap;
+    }
+
+    private Map<String, Object> buildGameInfoData() throws FileNotFoundException
     {
         File infoFile = file(path, "info.yaml");
 
         @SuppressWarnings("unchecked")
         Map<String, Object> infoData = yaml.loadAs(reader(infoFile), Map.class);
 
-        String name = (String) infoData.getOrDefault("name", "Unnamed");
-        String description = (String) infoData.getOrDefault("description", "");
-        String version = (String) infoData.getOrDefault("version", "");
-        String author = (String) infoData.getOrDefault("author", "");
-        String url = (String) infoData.getOrDefault("url", "");
-
-        return new GameInfo(name, description, version, author, url);
+        return infoData;
     }
 
     private Map<String, Object> buildRegistryData()
