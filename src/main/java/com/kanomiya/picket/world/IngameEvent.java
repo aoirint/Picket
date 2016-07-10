@@ -61,20 +61,16 @@ public class IngameEvent
     {
         this.direction = direction;
 
-        if (texture.enableDirection)
+        switch (direction)
         {
-
-            switch (direction)
-            {
-            case SOUTH: renderInfo.setProperty("direction", "south");
-                break;
-            case NORTH: renderInfo.setProperty("direction", "north");
-                break;
-            case WEST:  renderInfo.setProperty("direction", "west");
-                break;
-            case EAST:  renderInfo.setProperty("direction", "east");
-                break;
-            }
+        case SOUTH: renderInfo.setProperty("direction", "south");
+            break;
+        case NORTH: renderInfo.setProperty("direction", "north");
+            break;
+        case WEST:  renderInfo.setProperty("direction", "west");
+            break;
+        case EAST:  renderInfo.setProperty("direction", "east");
+            break;
         }
     }
 

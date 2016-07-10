@@ -7,40 +7,39 @@ import com.google.common.collect.Lists;
 import com.kanomiya.picket.render.texture.TextureLayer.DataSerializerTextureLayer;
 import com.kanomiya.picket.util.IDataSerializer;
 
-public class TextureVariant
+public class TextureStyle
 {
-    public final String id;
+    public final TextureStyleSelector selector;
     public final List<TextureLayer> layers;
 
-    public TextureVariant(String id, List<TextureLayer> layers)
+    public TextureStyle(TextureStyleSelector selector, List<TextureLayer> layers)
     {
-        this.id = id;
+        this.selector = selector;
         this.layers = layers;
     }
 
 
 
-    public static class DataSerializerTextureVariant implements IDataSerializer<TextureVariant>
+    public static class DataSerializerTextureStyle implements IDataSerializer<TextureStyle>
     {
         private final DataSerializerTextureLayer layerSerializer;
 
-        public DataSerializerTextureVariant()
+        public DataSerializerTextureStyle(DataSerializerTextureLayer layerSerializer)
         {
-            layerSerializer = new DataSerializerTextureLayer();
-
+            this.layerSerializer = layerSerializer;
         }
 
         @Override
-        public Map<String, Object> serialize(TextureVariant frame)
+        public Map<String, Object> serialize(TextureStyle style)
         {
 
             return null;
         }
 
         @Override
-        public TextureVariant deserialize(Map<String, Object> map)
+        public TextureStyle deserialize(Map<String, Object> map)
         {
-            final String id = (String) map.get("id");
+            TextureStyleSelector selector = new TextureStyleSelector((String) map.get("selector"));
 
             @SuppressWarnings("unchecked")
             List<Map<String, Object>> layerDataList = (List<Map<String, Object>>) map.get("layers");
@@ -51,7 +50,8 @@ public class TextureVariant
                 layers.add(layerSerializer.deserialize(layerData));
             });
 
-            return new TextureVariant(id, layers);
+
+            return new TextureStyle(selector, layers);
         }
 
     }

@@ -10,13 +10,15 @@ import com.kanomiya.picket.util.IDataSerializer;
 
 public class TextureLayer
 {
+    public final String id;
     public final String imageId;
     public final Point sourcePos;
     public final Dimension sourceSize;
     public final double rotate;
 
-    public TextureLayer(String imageId, @Nullable Point sourcePos, @Nullable Dimension sourceSize, double rotate)
+    public TextureLayer(String id, String imageId, @Nullable Point sourcePos, @Nullable Dimension sourceSize, double rotate)
     {
+        this.id = id;
         this.imageId = imageId;
         this.sourcePos = sourcePos;
         this.sourceSize = sourceSize;
@@ -49,6 +51,8 @@ public class TextureLayer
         @Override
         public TextureLayer deserialize(Map<String, Object> map)
         {
+            String id = (String) map.get("id");
+
             String imageId = (String) map.get("image");
             Point sourcePos = null;
             if (map.containsKey("sourceX") && map.containsKey("sourceY"))
@@ -75,7 +79,7 @@ public class TextureLayer
 
 
 
-            return new TextureLayer(imageId, sourcePos, sourceSize, rotate);
+            return new TextureLayer(id, imageId, sourcePos, sourceSize, rotate);
         }
 
     }

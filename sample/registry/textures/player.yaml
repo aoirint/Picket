@@ -1,46 +1,27 @@
 _dummy: dummy
 
-enableDirection: true
+layers:
+    - id: base
+      image: player
 
-variantSelector:
-    "[direction=south]":
-        frames:
-            - variant: south
-    "[direction=north]":
-        frames:
-            - variant: north
-    "[direction=west]":
-        frames:
-            - variant: west
-    "[direction=east]":
-        frames:
-            - variant: east
-
-variants:
-    normal:
-        layers:
-            - image: player
-    south:
-        layers:
-            - image: player
+styles:
+    - selector: "[direction]"
+       layers:
+            - id: base
+              sourceSize: 32
+    - selector: "[direction=south]"
+       layers:
+            - id: base
               sourceY: 0
-              sourceWidth: 32
-              sourceHeight: 32
-    north:
-        layers:
-            - image: player
+    - selector: "[direction=north]"
+       layers:
+            - id: base
               sourceY: 96
-              sourceWidth: 32
-              sourceHeight: 32
-    west:
-        layers:
-            - image: player
+    - selector: "[direction=west]"
+       layers:
+            - id: base
               sourceY: 32
-              sourceWidth: 32
-              sourceHeight: 32
-    east:
-        layers:
-            - image: player
+    - selector: "[direction=east]"
+       layers:
+            - id: base
               sourceY: 64
-              sourceWidth: 32
-              sourceHeight: 32

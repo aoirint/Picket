@@ -10,7 +10,6 @@ import com.kanomiya.picket.game.Game;
 import com.kanomiya.picket.render.texture.Texture;
 import com.kanomiya.picket.render.texture.TextureLayer;
 import com.kanomiya.picket.render.texture.TextureRenderInfo;
-import com.kanomiya.picket.render.texture.TextureVariant;
 
 public abstract class RenderBase<T>
 {
@@ -26,46 +25,10 @@ public abstract class RenderBase<T>
 
     public void renderTexture(Texture texture, @Nullable TextureRenderInfo info, Graphics2D g)
     {
-        TextureVariant variant = null;
 
-        int basesx = 0;
-        int basesy = 0;
 
-        int basedx = 0;
-        int basedy = 0;
 
-        int basewidth = -1;
-        int baseheight = -1;
-
-        if (info != null)
-        {
-            if (info.enableSourceOffset)
-            {
-                basesx = info.sourceOffsetX;
-                basesy = info.sourceOffsetY;
-            }
-
-            if (info.enableDestOffset)
-            {
-                basedx = info.destOffsetX;
-                basedy = info.destOffsetY;
-            }
-
-            if (info.enableSize)
-            {
-                basewidth = info.width;
-                baseheight = info.height;
-            }
-
-            if (info.animationFrame != null)
-            {
-                variant = info.animationFrame.variant;
-            }
-        }
-
-        if (variant == null) variant = texture.variants.get("normal");
-
-        List<TextureLayer> layers = variant.layers;
+        List<TextureLayer> layers = info.layers;
         if (layers != null)
         {
             for (TextureLayer layer: layers)
@@ -75,8 +38,8 @@ public abstract class RenderBase<T>
                 {
                     BufferedImage image = game.registry.image(layer.imageId);
 
-                    int sx = basesx;
-                    int sy = basesy;
+                    int sx = 0;
+                    int sy = 0;
 
                     if (layer.sourcePos != null)
                     {
@@ -84,14 +47,14 @@ public abstract class RenderBase<T>
                         sy += layer.sourcePos.y;
                     }
 
-                    int swidth = basewidth == -1 ? layer.sourceSize != null ? layer.sourceSize.width : image.getWidth() : basewidth;
-                    int sheight = baseheight == -1 ? layer.sourceSize != null ? layer.sourceSize.height : image.getHeight() : baseheight;
+                    int swidth = layer.sourceSize != null ? layer.sourceSize.width : image.getWidth();
+                    int sheight = layer.sourceSize != null ? layer.sourceSize.height : image.getHeight();
 
                     double theta = layer.rotate/180 *Math.PI;
 
                     g.rotate(theta, swidth/2, sheight/2);
 
-                    g.drawImage(image, basedx, basedy, basedx +swidth, basedy +sheight, sx, sy, sx +swidth, sy +sheight, null);
+                    g.drawImage(image, 0, 0, swidth, sheight, sx, sy, sx +swidth, sy +sheight, null);
 
                     g.rotate(-theta, swidth/2, sheight/2);
 

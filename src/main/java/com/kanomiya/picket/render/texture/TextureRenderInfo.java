@@ -1,60 +1,107 @@
 package com.kanomiya.picket.render.texture;
 
+import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Nullable;
+
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 public class TextureRenderInfo
 {
-    public boolean enableSourceOffset;
-    public boolean enableDestOffset;
-    public boolean enableSize;
-
-    public int sourceOffsetX, sourceOffsetY;
-    public int destOffsetX, destOffsetY;
-
-    public int width, height;
-
-    public int animationTick;
-    public TextureFrame animationFrame;
-
-    private final Map<String, String> properties;
-    private TextureVariantSelector cachedSelector;
-
+    private final Map<String, Object> properties;
     private boolean isPropertyUpdated;
 
-    public void setProperty(String key, String value)
-    {
-        properties.put(key, value);
-        isPropertyUpdated = true;
-    }
+    public List<TextureLayer> layers; // ベースと有効なスタイルを統合した一時的なもの
+
+    public int animationTick;
 
     public TextureRenderInfo()
     {
         properties = Maps.newHashMap();
     }
 
+
+    public void setProperty(String key, @Nullable String value)
+    {
+        if (value == null) properties.remove(key);
+        else properties.put(key, value);
+
+        isPropertyUpdated = true;
+    }
+
+
     public void nextTick(Texture texture)
     {
-        if (cachedSelector == null || isPropertyUpdated)
+        if (layers == null || isPropertyUpdated)
         {
-            String selectorId = "normal";
+            Map<String, Map<String, Object>> integrated = Maps.newHashMap();
 
-            if (properties.containsKey("direction")) // TODO: 普遍的に
+            texture.layers.forEach(layer ->
             {
-                selectorId = "[direction=" + properties.get("direction") + "]";
-            }
+                Map<String, Object> layerMap = Maps.newHashMap();
 
-            cachedSelector = texture.variantSelectors.get(selectorId);
+                layerMap.put("imageId", layer.imageId);
+                if (layer.sourcePos != null)
+                {
+                    layerMap.put("sourceX", layer.sourcePos.x);
+                    layerMap.put("sourceY", layer.sourcePos.y);
+                }
+
+                if (layer.sourceSize != null)
+                {
+                    layerMap.put("sourceWidth", layer.sourceSize.width);
+                    layerMap.put("sourceHeight", layer.sourceSize.height);
+                }
+
+                layerMap.put("rotate", layer.rotate);
+
+                integrated.put(layer.id, layerMap);
+            });
+
+            texture.styles.stream().filter(style -> style.selector.compiled.test(properties)).forEach(style ->
+            {
+                style.layers.forEach(layer ->
+                {
+                    Map<String, Object> layerMap = integrated.get(layer.id);
+                    if (layerMap == null) layerMap = Maps.newHashMap();
+
+                    layerMap.put("imageId", layer.imageId);
+
+                    if (layer.sourcePos != null)
+                    {
+                        int sourceX = (int) layerMap.getOrDefault("sourceX", 0);
+                        int sourceY = (int) layerMap.getOrDefault("sourceY", 0);
+
+                        layerMap.put("sourceX", sourceX +layer.sourcePos.x);
+                        layerMap.put("sourceY", sourceY +layer.sourcePos.y);
+                    }
+
+                    if (layer.sourceSize != null)
+                    {
+                        layerMap.put("sourceWidth", layer.sourceSize.width);
+                        layerMap.put("sourceHeight", layer.sourceSize.height);
+                    }
+
+                    layerMap.put("rotate", layer.rotate);
+
+                    integrated.put(layer.id, layerMap);
+                });
+            });
+
+
+            layers = Lists.newArrayList();
+
+            integrated.forEach((layerId, layerData) ->
+            {
+                layers.add(new TextureLayer(layerId, layerData.get("imageId"), new Point(layerData.get("sourceX"), layerData.get("sourceY")), ...));
+            });
+
             animationTick = 0;
             isPropertyUpdated = false;
         }
 
-        if (cachedSelector.totalTick < animationTick +1) animationTick = 0;
-        else if (1 < cachedSelector.totalFrame) animationTick ++;
-
-
-        animationFrame = cachedSelector.getFrameFor(animationTick);
 
     }
 

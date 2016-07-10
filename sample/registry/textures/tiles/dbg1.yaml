@@ -1,20 +1,19 @@
 _dummy: dummy
 
-variantSelector:
-    normal:
-        frames:
-            - variant: normal
-              delay: 10
-            - variant: rotated
-              delay: 10
+layers:
+    - id: base
+      image: tiles/dirt
+    - id: movable
+      image: missing
 
-variants:
-    normal:
+animation:
+    - cmd: "[rotated]"
+      delay: 10
+    - cmd: "[!rotated]"
+      delay: 10
+
+styles:
+    - selector: "[rotated]"
         layers:
-            - image: tiles/dirt
-            - image: missing
-    rotated:
-        layers:
-            - image: tiles/dirt
-            - image: missing
+            - id: movable
               rotate: 45.0

@@ -1,60 +1,38 @@
 package com.kanomiya.picket.render.texture;
 
-import java.util.Arrays;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import com.google.common.collect.Maps;
-import com.kanomiya.picket.render.texture.TextureVariant.DataSerializerTextureVariant;
-import com.kanomiya.picket.render.texture.TextureVariantSelector.DataSerializerTextureVariantSelector;
+import com.google.common.collect.Lists;
+import com.kanomiya.picket.render.texture.TextureLayer.DataSerializerTextureLayer;
+import com.kanomiya.picket.render.texture.TextureStyle.DataSerializerTextureStyle;
 import com.kanomiya.picket.util.IDataSerializer;
 
 public class Texture
 {
     public final String id;
-    public final boolean enableDirection;
-
-    public final Map<String, TextureVariant> variants;
-
-    public final Map<String, TextureVariantSelector> variantSelectors;
+    public final List<TextureLayer> layers;
+    public final List<TextureStyle> styles;
 
 
-
-    public Texture(String id, boolean enableDirection, TextureLayer layer)
-    {
-        this(id, enableDirection, Arrays.asList(layer));
-    }
-    public Texture(String id, boolean enableDirection, List<TextureLayer> layers)
-    {
-        this(id, enableDirection, new HashMap<String, TextureVariant>(){ { put("normal", new TextureVariant("normal", layers)); } });
-    }
-
-    public Texture(String id, boolean enableDirection, Map<String, TextureVariant> variants)
-    {
-        this(id, enableDirection, variants, new HashMap<String, TextureVariantSelector>(){ { put("normal", new TextureVariantSelector("normal", new TextureFrame(variants.get("normal")))); } });
-    }
-
-    public Texture(String id, boolean enableDirection, Map<String, TextureVariant> variants, Map<String, TextureVariantSelector> variantSelectors)
+    public Texture(String id, List<TextureLayer> layers, List<TextureStyle> styles)
     {
         this.id = id;
-        this.enableDirection = enableDirection;
-        this.variants = variants;
-
-        this.variantSelectors = variantSelectors;
+        this.layers = layers;
+        this.styles = styles;
     }
-
-
-
 
 
     public static class DataSerializerTexture implements IDataSerializer<Texture>
     {
-        private final DataSerializerTextureVariant variantSerializer;
+        private final DataSerializerTextureLayer layerSerializer;
+        private final DataSerializerTextureStyle styleSerializer;
 
         public DataSerializerTexture()
         {
-            variantSerializer = new DataSerializerTextureVariant();
+            layerSerializer = new DataSerializerTextureLayer();
+            styleSerializer = new DataSerializerTextureStyle(layerSerializer);
         }
 
         @Override
@@ -69,44 +47,31 @@ public class Texture
         {
             final String id = (String) map.get("id");
 
+            List<TextureLayer> layers = Lists.newArrayList();
+
             @SuppressWarnings("unchecked")
-            Map<String, Map<String, Object>> variantDataList = (Map<String, Map<String, Object>>) map.get("variants");
-            Map<String, TextureVariant> variants = Maps.newHashMap();
+            List<Map<String, Object>> layerDataList = (List<Map<String, Object>>) map.get("layers");
 
-            boolean enableDirection = (boolean) map.getOrDefault("enableDirection", false);
-
-            variantDataList.forEach((variantId, variantData) ->
+            layerDataList.forEach(layerData ->
             {
-                variantData.put("id", variantId);
-
-                variants.put(variantId, variantSerializer.deserialize(variantData));
+                layers.add(layerSerializer.deserialize(layerData));
             });
 
 
-            DataSerializerTextureVariantSelector variantSelectorSerializer = new DataSerializerTextureVariantSelector(variants);
+            List<TextureStyle> styles = Lists.newArrayList();
 
-            Map<String, TextureVariantSelector> variantSelectors = Maps.newHashMap();
-            if (map.containsKey("variantSelector"))
+            if (map.containsKey("styles"))
             {
                 @SuppressWarnings("unchecked")
-                Map<String, Map<String, Object>> variantSelectorDataMap = (Map<String, Map<String, Object>>) map.get("variantSelector");
+                List<Map<String, Object>> styleDataList = (List<Map<String, Object>>) map.get("styles");
 
-
-                variantSelectorDataMap.forEach((variantSelectorId, variantSelectorData) ->
+                styleDataList.forEach(styleData ->
                 {
-                    variantSelectorData.put("id", variantSelectorId);
-
-                    variantSelectors.put(variantSelectorId, variantSelectorSerializer.deserialize(variantSelectorData));
+                    styles.add(styleSerializer.deserialize(styleData));
                 });
-
             }
 
-            if (! variantSelectors.containsKey("normal"))
-            {
-                variantSelectors.put("normal", new TextureVariantSelector("normal", new TextureFrame(variants.get("normal"))));
-            }
-
-            return new Texture(id, enableDirection, variants, variantSelectors);
+            return new Texture(id, layers, Collections.unmodifiableList(styles));
         }
 
     }

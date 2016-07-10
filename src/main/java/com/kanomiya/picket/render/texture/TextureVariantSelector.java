@@ -49,7 +49,7 @@ public class TextureVariantSelector
 
     public TextureFrame getFrameFor(int tick)
     {
-        if (tick < 0 || totalTick < tick) throw new IllegalArgumentException("Tick should be from 0 to TotalFrame(" + totalFrame + "). Tick=" + tick);
+        if (tick < 0 || totalTick < tick) throw new IllegalArgumentException("Tick should be from 0 to TotaTick(" + totalTick + "). Tick=" + tick);
 
         if (tick < frameBorderTick.get(0)) return frames.get(0);
 
