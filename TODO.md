@@ -5,8 +5,6 @@
 - [ ] プロパティをいかにRenderTextureに普遍的に反映するか考える
 - [ ] TextureVariantSelector（定数、プロパティ参照、アニメーション、プロパティ参照アニメーション）
 - yaml糖衣構文
-    - [ ] textures/variants 継承（base: normal） => プロパティ初期値のコピー
-    - [ ]
     - [ ]
 - スクリプト
     - [ ] 実行環境

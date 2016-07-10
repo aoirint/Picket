@@ -10,6 +10,7 @@ import com.kanomiya.picket.game.Game;
 import com.kanomiya.picket.render.texture.Texture;
 import com.kanomiya.picket.render.texture.TextureLayer;
 import com.kanomiya.picket.render.texture.TextureRenderInfo;
+import com.kanomiya.picket.render.texture.TextureVariant;
 
 public abstract class RenderBase<T>
 {
@@ -25,7 +26,7 @@ public abstract class RenderBase<T>
 
     public void renderTexture(Texture texture, @Nullable TextureRenderInfo info, Graphics2D g)
     {
-        String variantId = "normal";
+        TextureVariant variant = null;
 
         int basesx = 0;
         int basesy = 0;
@@ -56,18 +57,15 @@ public abstract class RenderBase<T>
                 baseheight = info.height;
             }
 
-            if (info.enableVariantId)
+            if (info.animationFrame != null)
             {
-                variantId = info.variantId;
-            }
-
-            if (texture.animation != null)
-            {
-                variantId = texture.animation.frames.get(info.animationFrameId).variantId;
+                variant = info.animationFrame.variant;
             }
         }
 
-        List<TextureLayer> layers = texture.variants.get(variantId);
+        if (variant == null) variant = texture.variants.get("normal");
+
+        List<TextureLayer> layers = variant.layers;
         if (layers != null)
         {
             for (TextureLayer layer: layers)

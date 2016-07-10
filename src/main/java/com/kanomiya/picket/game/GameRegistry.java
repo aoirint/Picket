@@ -57,9 +57,9 @@ public class GameRegistry
     {
         final int maxLen = 10;
         return "GameRegistry [imageRegistry="
-                + (imageRegistry != null ? toString(imageRegistry.entrySet(), maxLen) : null) + ", textureRegistry="
-                + (textureRegistry != null ? toString(textureRegistry.entrySet(), maxLen) : null) + ", tileRegistry="
-                + (tileRegistry != null ? toString(tileRegistry.entrySet(), maxLen) : null) + "]";
+                + (imageRegistry != null ? toString(imageRegistry.keySet(), maxLen) : null) + ", textureRegistry="
+                + (textureRegistry != null ? toString(textureRegistry.keySet(), maxLen) : null) + ", tileRegistry="
+                + (tileRegistry != null ? toString(tileRegistry.keySet(), maxLen) : null) + "]";
     }
 
     private String toString(Collection<?> collection, int maxLen)

@@ -55,9 +55,9 @@ public class App
                         {
                             game.world.worldEventRegistry.values().forEach((event) ->
                             {
-                                if (event.texture != null && event.texture.animation != null)
+                                if (event.texture != null)
                                 {
-                                    event.renderInfo.nextTick(event.texture.animation);
+                                    event.renderInfo.nextTick(event.texture);
                                 }
                             });
 
@@ -70,9 +70,9 @@ public class App
                                     for (int y=0; y<map.height(); y++)
                                     {
                                         Tile tile = map.tileAt(x, y);
-                                        if (tile != null && tile.texture != null && tile.texture.animation != null)
+                                        if (tile != null && tile.texture != null)
                                         {
-                                            tile.renderInfo.nextTick(tile.texture.animation);
+                                            tile.renderInfo.nextTick(tile.texture);
                                         }
                                     }
                                 }

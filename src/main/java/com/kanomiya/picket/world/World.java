@@ -47,9 +47,9 @@ public class World
     public String toString()
     {
         final int maxLen = 10;
-        return "World [mapRegistry=" + (mapRegistry != null ? toString(mapRegistry.entrySet(), maxLen) : null)
+        return "World [mapRegistry=" + (mapRegistry != null ? toString(mapRegistry.keySet(), maxLen) : null)
                 + ", globalEventRegistry="
-                + (worldEventRegistry != null ? toString(worldEventRegistry.entrySet(), maxLen) : null)
+                + (worldEventRegistry != null ? toString(worldEventRegistry.keySet(), maxLen) : null)
                 + ", worldRecords=" + (worldRecords != null ? toString(worldRecords.entrySet(), maxLen) : null) + "]";
     }
 

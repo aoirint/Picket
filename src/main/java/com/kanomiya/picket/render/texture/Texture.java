@@ -5,14 +5,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.Nullable;
-
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.kanomiya.picket.render.texture.TextureLayer.DataSerializerTextureLayer;
-import com.kanomiya.picket.render.texture.animation.Animation;
-import com.kanomiya.picket.render.texture.animation.AnimationFrame;
-import com.kanomiya.picket.render.texture.animation.AnimationFrame.DataSerializerAnimationFrame;
+import com.kanomiya.picket.render.texture.TextureVariant.DataSerializerTextureVariant;
+import com.kanomiya.picket.render.texture.TextureVariantSelector.DataSerializerTextureVariantSelector;
 import com.kanomiya.picket.util.IDataSerializer;
 
 public class Texture
@@ -20,10 +15,9 @@ public class Texture
     public final String id;
     public final boolean enableDirection;
 
-    public final Map<String, List<TextureLayer>> variants;
+    public final Map<String, TextureVariant> variants;
 
-    @Nullable
-    public final Animation animation;
+    public final Map<String, TextureVariantSelector> variantSelectors;
 
 
 
@@ -33,17 +27,21 @@ public class Texture
     }
     public Texture(String id, boolean enableDirection, List<TextureLayer> layers)
     {
-        this(id, enableDirection, new HashMap<String, List<TextureLayer>>(){ { put("normal", layers); } }, null);
+        this(id, enableDirection, new HashMap<String, TextureVariant>(){ { put("normal", new TextureVariant("normal", layers)); } });
     }
 
-    public Texture(String id, boolean enableDirection, Map<String, List<TextureLayer>> variants, @Nullable List<AnimationFrame> animationFrames)
+    public Texture(String id, boolean enableDirection, Map<String, TextureVariant> variants)
+    {
+        this(id, enableDirection, variants, new HashMap<String, TextureVariantSelector>(){ { put("normal", new TextureVariantSelector("normal", new TextureFrame(variants.get("normal")))); } });
+    }
+
+    public Texture(String id, boolean enableDirection, Map<String, TextureVariant> variants, Map<String, TextureVariantSelector> variantSelectors)
     {
         this.id = id;
         this.enableDirection = enableDirection;
         this.variants = variants;
 
-        this.animation = animationFrames != null ? new Animation(animationFrames) : null;
-
+        this.variantSelectors = variantSelectors;
     }
 
 
@@ -52,13 +50,11 @@ public class Texture
 
     public static class DataSerializerTexture implements IDataSerializer<Texture>
     {
-        private final DataSerializerTextureLayer layerSerializer;
-        private final DataSerializerAnimationFrame frameSerializer;
+        private final DataSerializerTextureVariant variantSerializer;
 
         public DataSerializerTexture()
         {
-            layerSerializer = new DataSerializerTextureLayer();
-            frameSerializer = new DataSerializerAnimationFrame();
+            variantSerializer = new DataSerializerTextureVariant();
         }
 
         @Override
@@ -74,40 +70,43 @@ public class Texture
             final String id = (String) map.get("id");
 
             @SuppressWarnings("unchecked")
-            Map<String, List<Map<String, Object>>> variantDataList = (Map<String, List<Map<String, Object>>>) map.get("variants");
-            Map<String, List<TextureLayer>> variants = Maps.newHashMap();
+            Map<String, Map<String, Object>> variantDataList = (Map<String, Map<String, Object>>) map.get("variants");
+            Map<String, TextureVariant> variants = Maps.newHashMap();
 
             boolean enableDirection = (boolean) map.getOrDefault("enableDirection", false);
 
             variantDataList.forEach((variantId, variantData) ->
             {
-                List<TextureLayer> layers = Lists.newArrayList();
+                variantData.put("id", variantId);
 
-                variantData.forEach(layerData ->
-                {
-                    layers.add(layerSerializer.deserialize(layerData));
-                });
-
-                variants.put(variantId, layers);
+                variants.put(variantId, variantSerializer.deserialize(variantData));
             });
 
-            List<AnimationFrame> animation;
-            if (map.containsKey("animation"))
+
+            DataSerializerTextureVariantSelector variantSelectorSerializer = new DataSerializerTextureVariantSelector(variants);
+
+            Map<String, TextureVariantSelector> variantSelectors = Maps.newHashMap();
+            if (map.containsKey("variantSelector"))
             {
                 @SuppressWarnings("unchecked")
-                List<Map<String, Object>> animationDataList = (List<Map<String, Object>>) map.get("animation");
+                Map<String, Map<String, Object>> variantSelectorDataMap = (Map<String, Map<String, Object>>) map.get("variantSelector");
 
-                animation = Lists.newArrayList();
 
-                animationDataList.forEach(animationData ->
+                variantSelectorDataMap.forEach((variantSelectorId, variantSelectorData) ->
                 {
-                    animation.add(frameSerializer.deserialize(animationData));
+                    variantSelectorData.put("id", variantSelectorId);
+
+                    variantSelectors.put(variantSelectorId, variantSelectorSerializer.deserialize(variantSelectorData));
                 });
 
-            } else animation = null;
+            }
 
+            if (! variantSelectors.containsKey("normal"))
+            {
+                variantSelectors.put("normal", new TextureVariantSelector("normal", new TextureFrame(variants.get("normal"))));
+            }
 
-            return new Texture(id, enableDirection, variants, animation);
+            return new Texture(id, enableDirection, variants, variantSelectors);
         }
 
     }

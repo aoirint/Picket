@@ -1,8 +1,8 @@
 package com.kanomiya.picket.render.texture;
 
-import javax.annotation.Nonnull;
+import java.util.Map;
 
-import com.kanomiya.picket.render.texture.animation.Animation;
+import com.google.common.collect.Maps;
 
 public class TextureRenderInfo
 {
@@ -15,31 +15,46 @@ public class TextureRenderInfo
 
     public int width, height;
 
-    public boolean enableVariantId;
-    public String variantId = "normal";
-
     public int animationTick;
-    public int animationFrameId;
+    public TextureFrame animationFrame;
 
-    private Animation cachedAnimation;
+    private final Map<String, String> properties;
+    private TextureVariantSelector cachedSelector;
+
+    private boolean isPropertyUpdated;
+
+    public void setProperty(String key, String value)
+    {
+        properties.put(key, value);
+        isPropertyUpdated = true;
+    }
 
     public TextureRenderInfo()
     {
-
+        properties = Maps.newHashMap();
     }
 
-    public void nextTick(@Nonnull Animation animation)
+    public void nextTick(Texture texture)
     {
-        if (cachedAnimation != animation)
+        if (cachedSelector == null || isPropertyUpdated)
         {
-            cachedAnimation = animation;
+            String selectorId = "normal";
+
+            if (properties.containsKey("direction")) // TODO: 普遍的に
+            {
+                selectorId = "[direction=" + properties.get("direction") + "]";
+            }
+
+            cachedSelector = texture.variantSelectors.get(selectorId);
             animationTick = 0;
+            isPropertyUpdated = false;
         }
 
-        if (animation.totalTick < animationTick +1) animationTick = 0;
-        else animationTick ++;
+        if (cachedSelector.totalTick < animationTick +1) animationTick = 0;
+        else if (1 < cachedSelector.totalFrame) animationTick ++;
 
-        animationFrameId = animation.getFrameIdFromTick(animationTick);
+
+        animationFrame = cachedSelector.getFrameFor(animationTick);
 
     }
 
