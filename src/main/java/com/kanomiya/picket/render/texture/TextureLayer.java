@@ -1,34 +1,31 @@
 package com.kanomiya.picket.render.texture;
 
-import java.awt.Dimension;
-import java.awt.Point;
 import java.util.Map;
 
-import javax.annotation.Nullable;
-
+import com.kanomiya.picket.render.texture.TextureStylePart.DataSerializerTextureStylePart;
 import com.kanomiya.picket.util.IDataSerializer;
 
 public class TextureLayer
 {
     public final String id;
-    public final String imageId;
-    public final Point sourcePos;
-    public final Dimension sourceSize;
-    public final double rotate;
+    public final TextureStylePart baseStyle;
 
-    public TextureLayer(String id, String imageId, @Nullable Point sourcePos, @Nullable Dimension sourceSize, double rotate)
+    public TextureLayer(String id)
     {
         this.id = id;
-        this.imageId = imageId;
-        this.sourcePos = sourcePos;
-        this.sourceSize = sourceSize;
-        this.rotate = rotate;
+        this.baseStyle = new TextureStylePart(id);
+    }
+
+    public TextureLayer(String id, TextureStylePart baseStyle)
+    {
+        this.id = id;
+        this.baseStyle = baseStyle;
     }
 
     @Override
     public String toString()
     {
-        return "TextureLayer [imageId=" + imageId + ", rotate=" + rotate + "]";
+        return "TextureLayer [id=" + id + "]";
     }
 
 
@@ -36,9 +33,11 @@ public class TextureLayer
 
     public static class DataSerializerTextureLayer implements IDataSerializer<TextureLayer>
     {
+        private final DataSerializerTextureStylePart stylePartSerializer;
+
         public DataSerializerTextureLayer()
         {
-
+            stylePartSerializer = new DataSerializerTextureStylePart();
         }
 
         @Override
@@ -53,33 +52,9 @@ public class TextureLayer
         {
             String id = (String) map.get("id");
 
-            String imageId = (String) map.get("image");
-            Point sourcePos = null;
-            if (map.containsKey("sourceX") && map.containsKey("sourceY"))
-            {
-                sourcePos = new Point((int) map.get("sourceX"), (int) map.get("sourceY"));
-            } else if (map.containsKey("sourceX"))
-            {
-                sourcePos = new Point((int) map.get("sourceX"), 0);
-            } else if (map.containsKey("sourceY"))
-            {
-                sourcePos = new Point(0, (int) map.get("sourceY"));
-            }
+            TextureStylePart baseStyle = stylePartSerializer.deserialize(map);
 
-            Dimension sourceSize = null;
-            if (map.containsKey("sourceSize"))
-            {
-                sourceSize = new Dimension((int) map.get("sourceSize"), (int) map.get("sourceSize"));
-            } else if (map.containsKey("sourceWidth") && map.containsKey("sourceHeight"))
-            {
-                sourceSize = new Dimension((int) map.get("sourceWidth"), (int) map.get("sourceHeight"));
-            }
-
-            double rotate = (double) map.getOrDefault("rotate", 0d);
-
-
-
-            return new TextureLayer(id, imageId, sourcePos, sourceSize, rotate);
+            return new TextureLayer(id, baseStyle);
         }
 
     }

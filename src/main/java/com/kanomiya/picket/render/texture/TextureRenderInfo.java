@@ -13,9 +13,12 @@ public class TextureRenderInfo
     private final Map<String, Object> properties;
     private boolean isPropertyUpdated;
 
-    public List<TextureLayer> layers; // ベースと有効なスタイルを統合した一時的なもの
+    public List<TextureStylePart> layers; // ベースと有効なスタイルを統合した一時的なもの
 
+    private boolean enableAnimation;
     public int animationTick;
+
+    private Texture cachedTexture;
 
     public TextureRenderInfo()
     {
@@ -34,74 +37,68 @@ public class TextureRenderInfo
 
     public void nextTick(Texture texture)
     {
+        if (cachedTexture != texture)
+        {
+            cachedTexture = texture;
+
+            if (texture.animation != null)
+            {
+                enableAnimation = true;
+                animationTick = 0;
+            }
+
+            layers = null;
+        }
+
         if (layers == null || isPropertyUpdated)
         {
-            Map<String, Map<String, Object>> integrated = Maps.newHashMap();
+            layers = Lists.newArrayList();
+
+            Map<String, TextureStylePart> styles = Maps.newHashMap();
 
             texture.layers.forEach(layer ->
             {
-                Map<String, Object> layerMap = Maps.newHashMap();
-
-                layerMap.put("imageId", layer.imageId);
-                if (layer.sourcePos != null)
-                {
-                    layerMap.put("sourceX", layer.sourcePos.x);
-                    layerMap.put("sourceY", layer.sourcePos.y);
-                }
-
-                if (layer.sourceSize != null)
-                {
-                    layerMap.put("sourceWidth", layer.sourceSize.width);
-                    layerMap.put("sourceHeight", layer.sourceSize.height);
-                }
-
-                layerMap.put("rotate", layer.rotate);
-
-                integrated.put(layer.id, layerMap);
+                styles.put(layer.id, layer.baseStyle);
             });
 
-            texture.styles.stream().filter(style -> style.selector.compiled.test(properties)).forEach(style ->
+            texture.styles.forEach(style ->
             {
-                style.layers.forEach(layer ->
+                if (style.selector.compiled.test(properties))
                 {
-                    Map<String, Object> layerMap = integrated.get(layer.id);
-                    if (layerMap == null) layerMap = Maps.newHashMap();
-
-                    layerMap.put("imageId", layer.imageId);
-
-                    if (layer.sourcePos != null)
+                    style.layers.forEach((layerId, stylePart) ->
                     {
-                        int sourceX = (int) layerMap.getOrDefault("sourceX", 0);
-                        int sourceY = (int) layerMap.getOrDefault("sourceY", 0);
-
-                        layerMap.put("sourceX", sourceX +layer.sourcePos.x);
-                        layerMap.put("sourceY", sourceY +layer.sourcePos.y);
-                    }
-
-                    if (layer.sourceSize != null)
-                    {
-                        layerMap.put("sourceWidth", layer.sourceSize.width);
-                        layerMap.put("sourceHeight", layer.sourceSize.height);
-                    }
-
-                    layerMap.put("rotate", layer.rotate);
-
-                    integrated.put(layer.id, layerMap);
-                });
+                        styles.put(layerId, styles.containsKey(layerId) ? styles.get(layerId).merge(stylePart) : stylePart);
+                    });
+                }
             });
 
-
-            layers = Lists.newArrayList();
-
-            integrated.forEach((layerId, layerData) ->
+            texture.layers.forEach(layer ->
             {
-                layers.add(new TextureLayer(layerId, layerData.get("imageId"), new Point(layerData.get("sourceX"), layerData.get("sourceY")), ...));
+                layers.add(styles.get(layer.id));
             });
 
-            animationTick = 0;
             isPropertyUpdated = false;
         }
 
+        if (enableAnimation)
+        {
+            int index = texture.animation.tickForUpdate.indexOf(animationTick);
+
+            if (index != -1 && index < texture.animation.cmdCount)
+            {
+                int hash = properties.hashCode();
+                texture.animation.commands.get(index).compiled.accept(properties);
+
+                if (hash != properties.hashCode()) isPropertyUpdated = true;
+            }
+
+            animationTick ++;
+
+            if (texture.animation.maxTick < animationTick)
+            {
+                animationTick = 0;
+            }
+        }
 
     }
 

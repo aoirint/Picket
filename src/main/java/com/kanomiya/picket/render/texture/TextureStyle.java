@@ -1,18 +1,17 @@
 package com.kanomiya.picket.render.texture;
 
-import java.util.List;
 import java.util.Map;
 
-import com.google.common.collect.Lists;
-import com.kanomiya.picket.render.texture.TextureLayer.DataSerializerTextureLayer;
+import com.google.common.collect.Maps;
+import com.kanomiya.picket.render.texture.TextureStylePart.DataSerializerTextureStylePart;
 import com.kanomiya.picket.util.IDataSerializer;
 
 public class TextureStyle
 {
     public final TextureStyleSelector selector;
-    public final List<TextureLayer> layers;
+    public final Map<String, TextureStylePart> layers;
 
-    public TextureStyle(TextureStyleSelector selector, List<TextureLayer> layers)
+    public TextureStyle(TextureStyleSelector selector, Map<String, TextureStylePart> layers)
     {
         this.selector = selector;
         this.layers = layers;
@@ -22,11 +21,11 @@ public class TextureStyle
 
     public static class DataSerializerTextureStyle implements IDataSerializer<TextureStyle>
     {
-        private final DataSerializerTextureLayer layerSerializer;
+        private final DataSerializerTextureStylePart stylePartSerializer;
 
-        public DataSerializerTextureStyle(DataSerializerTextureLayer layerSerializer)
+        public DataSerializerTextureStyle()
         {
-            this.layerSerializer = layerSerializer;
+            this.stylePartSerializer = new DataSerializerTextureStylePart();
         }
 
         @Override
@@ -42,12 +41,12 @@ public class TextureStyle
             TextureStyleSelector selector = new TextureStyleSelector((String) map.get("selector"));
 
             @SuppressWarnings("unchecked")
-            List<Map<String, Object>> layerDataList = (List<Map<String, Object>>) map.get("layers");
-            List<TextureLayer> layers = Lists.newArrayList();
+            Map<String, Map<String, Object>> layerDataMap = (Map<String, Map<String, Object>>) map.get("layers");
+            Map<String, TextureStylePart> layers = Maps.newHashMap();
 
-            layerDataList.forEach(layerData ->
+            layerDataMap.forEach((layerId, styleData) ->
             {
-                layers.add(layerSerializer.deserialize(layerData));
+                layers.put(layerId, stylePartSerializer.deserialize(styleData));
             });
 
 

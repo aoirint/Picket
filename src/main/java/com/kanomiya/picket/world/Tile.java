@@ -6,7 +6,6 @@ import java.util.Map;
 import javax.annotation.Nullable;
 
 import com.kanomiya.picket.render.texture.Texture;
-import com.kanomiya.picket.render.texture.TextureLayer;
 import com.kanomiya.picket.render.texture.TextureRenderInfo;
 import com.kanomiya.picket.util.IDataSerializer;
 
@@ -64,7 +63,7 @@ public class Tile
 
             if (! textureRegistry.containsKey(textureId) && imageRegistry.containsKey(textureId))
             {
-                textureRegistry.put(textureId, new Texture(textureId, false, new TextureLayer(textureId, null, null, 0d)));
+                textureRegistry.put(textureId, new Texture(textureId));
             }
 
             Texture texture = textureRegistry.get(textureId);

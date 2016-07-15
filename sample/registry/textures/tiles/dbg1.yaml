@@ -3,7 +3,7 @@ _dummy: dummy
 layers:
     - id: base
       image: tiles/dirt
-    - id: movable
+    - id: head
       image: missing
 
 animation:
@@ -14,6 +14,6 @@ animation:
 
 styles:
     - selector: "[rotated]"
-        layers:
-            - id: movable
+      layers:
+          head:
               rotate: 45.0

@@ -8,7 +8,7 @@ import javax.annotation.Nullable;
 
 import com.kanomiya.picket.game.Game;
 import com.kanomiya.picket.render.texture.Texture;
-import com.kanomiya.picket.render.texture.TextureLayer;
+import com.kanomiya.picket.render.texture.TextureStylePart;
 import com.kanomiya.picket.render.texture.TextureRenderInfo;
 
 public abstract class RenderBase<T>
@@ -28,10 +28,10 @@ public abstract class RenderBase<T>
 
 
 
-        List<TextureLayer> layers = info.layers;
+        List<TextureStylePart> layers = info.layers;
         if (layers != null)
         {
-            for (TextureLayer layer: layers)
+            for (TextureStylePart layer: layers)
             {
 
                 if (layer.imageId != null)

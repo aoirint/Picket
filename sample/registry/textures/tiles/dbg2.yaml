@@ -1,8 +1,8 @@
 _dummy: dummy
 
-variants:
-    normal:
-        layers:
-            - image: tiles/dirt
-            - image: missing
-              rotate: 45.0
+layers:
+    - id: base
+      image: tiles/dirt
+    - id: head
+      image: missing
+      rotate: 45.0

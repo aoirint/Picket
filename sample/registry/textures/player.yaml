@@ -6,22 +6,22 @@ layers:
 
 styles:
     - selector: "[direction]"
-       layers:
-            - id: base
-              sourceSize: 32
+      layers:
+            base:
+                sourceSize: 32
     - selector: "[direction=south]"
-       layers:
-            - id: base
-              sourceY: 0
+      layers:
+            base:
+                sourceY: 0
     - selector: "[direction=north]"
-       layers:
-            - id: base
-              sourceY: 96
+      layers:
+            base:
+                sourceY: 96
     - selector: "[direction=west]"
-       layers:
-            - id: base
-              sourceY: 32
+      layers:
+            base:
+                sourceY: 32
     - selector: "[direction=east]"
-       layers:
-            - id: base
-              sourceY: 64
+      layers:
+            base:
+                sourceY: 64

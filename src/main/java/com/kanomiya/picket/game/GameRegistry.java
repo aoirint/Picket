@@ -13,7 +13,6 @@ import javax.imageio.ImageIO;
 import com.google.common.collect.Maps;
 import com.kanomiya.picket.render.texture.Texture;
 import com.kanomiya.picket.render.texture.Texture.DataSerializerTexture;
-import com.kanomiya.picket.render.texture.TextureLayer;
 import com.kanomiya.picket.util.IDataSerializer;
 import com.kanomiya.picket.world.Tile;
 import com.kanomiya.picket.world.Tile.DataSerializerTile;
@@ -109,7 +108,7 @@ public class GameRegistry
                 e.printStackTrace();
             }
 
-            textureRegistry.put("missing", new Texture("missing", false, new TextureLayer("missing", null, null, 0d)));
+            textureRegistry.put("missing", new Texture("missing"));
             tileRegistry.put("null", new Tile("null", null));
 
 
@@ -149,7 +148,7 @@ public class GameRegistry
             {
                 if (! textureRegistry.containsKey(id))
                 {
-                    textureRegistry.put(id, new Texture(id, false, new TextureLayer(id, null, null, 0d)));
+                    textureRegistry.put(id, new Texture(id));
                 }
             });
 
