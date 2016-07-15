@@ -72,7 +72,7 @@ public class TextureRenderInfo
                 }
             });
 
-            texture.layers.forEach(layer ->
+            texture.layers.forEach(layer -> // レイヤーの並び順を保持
             {
                 layers.add(styles.get(layer.id));
             });
@@ -82,7 +82,7 @@ public class TextureRenderInfo
 
         if (enableAnimation)
         {
-            int index = texture.animation.tickForUpdate.indexOf(animationTick);
+            int index = texture.animation.tickForUpdate.indexOf(animationTick); // 0及び末端Tickを含むので注意
 
             if (index != -1 && index < texture.animation.cmdCount)
             {
