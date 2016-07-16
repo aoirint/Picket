@@ -8,8 +8,8 @@ import javax.annotation.Nullable;
 
 import com.kanomiya.picket.game.Game;
 import com.kanomiya.picket.render.texture.Texture;
-import com.kanomiya.picket.render.texture.TextureStylePart;
 import com.kanomiya.picket.render.texture.TextureRenderInfo;
+import com.kanomiya.picket.render.texture.TextureStylePart;
 
 public abstract class RenderBase<T>
 {
@@ -23,9 +23,11 @@ public abstract class RenderBase<T>
     public abstract void render(T obj, Graphics2D g);
 
 
+
+
     public void renderTexture(Texture texture, @Nullable TextureRenderInfo info, Graphics2D g)
     {
-
+        info.prePaint(texture);
 
 
         List<TextureStylePart> layers = info.layers;

@@ -35,21 +35,8 @@ public class TextureRenderInfo
     }
 
 
-    public void nextTick(Texture texture)
+    public void prePaint(Texture texture)
     {
-        if (cachedTexture != texture)
-        {
-            cachedTexture = texture;
-
-            if (texture.animation != null)
-            {
-                enableAnimation = true;
-                animationTick = 0;
-            }
-
-            layers = null;
-        }
-
         if (layers == null || isPropertyUpdated)
         {
             layers = Lists.newArrayList();
@@ -79,6 +66,24 @@ public class TextureRenderInfo
 
             isPropertyUpdated = false;
         }
+    }
+
+
+    public void nextTick(Texture texture)
+    {
+        if (cachedTexture != texture)
+        {
+            cachedTexture = texture;
+
+            if (texture.animation != null)
+            {
+                enableAnimation = true;
+                animationTick = 0;
+            }
+
+            layers = null;
+        }
+
 
         if (enableAnimation)
         {
